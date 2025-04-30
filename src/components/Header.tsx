@@ -15,8 +15,6 @@ const Header = () => {
           <Link to="/dashboard" className="text-gray-600 hover:text-career-blue transition-colors">Tableau de bord</Link>
           <Link to="/messaging" className="text-gray-600 hover:text-career-blue transition-colors">Messages</Link>
           <Link to="/calendar" className="text-gray-600 hover:text-career-blue transition-colors">Calendrier</Link>
-          <Link to="/add-job-offer" className="text-gray-600 hover:text-career-blue transition-colors">Ajouter une offre</Link>
-          <Link to="/edit-profile" className="text-gray-600 hover:text-career-blue transition-colors">Modifier profil</Link>
         </nav>
 
         <div className="flex items-center gap-3">

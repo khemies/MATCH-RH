@@ -10,17 +10,26 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { User, Users, MessageSquare, Calendar, Star, Briefcase } from "lucide-react";
 
 const Dashboard = () => {
   const [userType, setUserType] = useState("");
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Dans une vrai application, cela viendrait de l'état d'authentification
     // Pour la démo, on simule un type d'utilisateur aléatoire
     setUserType(Math.random() > 0.5 ? "candidate" : "recruiter");
   }, []);
+
+  const handleActionButtonClick = () => {
+    if (userType === "candidate") {
+      navigate("/edit-profile");
+    } else {
+      navigate("/add-job-offer");
+    }
+  };
 
   return (
     <>
@@ -37,7 +46,10 @@ const Dashboard = () => {
               </p>
             </div>
             
-            <Button className="bg-career-blue hover:bg-career-darkblue">
+            <Button 
+              className="bg-career-blue hover:bg-career-darkblue" 
+              onClick={handleActionButtonClick}
+            >
               {userType === "candidate" ? "Modifier mon profil" : "Publier une offre"}
             </Button>
           </div>
