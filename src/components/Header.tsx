@@ -7,7 +7,7 @@ const Header = () => {
     <header className="w-full py-4 px-6 lg:px-10 bg-white shadow-sm fixed top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-career-darkblue">CareerLinkMatch</span>
+          <span className="text-2xl font-bold text-career-darkblue">MatchRH</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">

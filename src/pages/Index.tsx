@@ -13,7 +13,7 @@ const Index = () => {
         
         <section className="py-16 px-6 bg-career-lightgray">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Pourquoi choisir CareerLinkMatch?</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">Pourquoi choisir MatchRH?</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
@@ -53,7 +53,7 @@ const Index = () => {
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-6">Prêt à transformer votre processus de recrutement?</h2>
             <p className="text-lg text-gray-600 mb-8">
-              Rejoignez CareerLinkMatch aujourd'hui et découvrez une nouvelle façon de connecter talents et opportunités.
+              Rejoignez MatchRH aujourd'hui et découvrez une nouvelle façon de connecter talents et opportunités.
             </p>
             <Button className="bg-career-blue hover:bg-career-darkblue text-white text-lg px-8 py-6">
               <Link to="/register" className="w-full h-full inline-flex items-center justify-center">
@@ -66,7 +66,7 @@ const Index = () => {
         <footer className="bg-career-dark text-white py-12 px-6">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-xl mb-4">CareerLinkMatch</h3>
+              <h3 className="font-bold text-xl mb-4">MatchRH</h3>
               <p className="text-gray-300">
                 La plateforme qui révolutionne la mise en relation entre candidats et recruteurs.
               </p>
@@ -93,14 +93,14 @@ const Index = () => {
             <div>
               <h4 className="font-semibold mb-4">Contact</h4>
               <address className="text-gray-300 not-italic">
-                <p>Email: info@careerlm.com</p>
+                <p>Email: info@matchrh.com</p>
                 <p>Tél: +33 01 23 45 67 89</p>
               </address>
             </div>
           </div>
           
           <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
-            <p>© {new Date().getFullYear()} CareerLinkMatch. Tous droits réservés.</p>
+            <p>© {new Date().getFullYear()} MatchRH. Tous droits réservés.</p>
           </div>
         </footer>
       </main>
