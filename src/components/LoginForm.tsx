@@ -13,16 +13,16 @@ const LoginForm = ({ isRegister = false }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!email || !password || (isRegister && !userType)) {
       toast.error("Veuillez remplir tous les champs");
       return;
     }
-
+  
     const url = isRegister
       ? "http://localhost:5000/api/auth/register"
       : "http://localhost:5000/api/auth/login";
-
+  
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -35,17 +35,22 @@ const LoginForm = ({ isRegister = false }) => {
           ...(isRegister ? { role: userType } : {}),
         }),
       });
-
+  
       const data = await res.json();
-
+  
       if (!res.ok) {
         toast.error(data.error || "Une erreur est survenue");
         return;
       }
-
+  
       toast.success(data.message || "Succès !");
-      
-      // Rediriger après l'inscription
+  
+      // Si c'est une connexion, on stocke l'ID du recruteur
+      if (!isRegister) {
+        localStorage.setItem("recruiter_id", data.user_id);  // Stocke l'ID du recruteur
+      }
+  
+      // Rediriger après l'inscription ou la connexion
       if (isRegister) {
         // Si l'utilisateur vient de s'inscrire, rediriger vers la page de connexion
         setTimeout(() => {
@@ -57,11 +62,12 @@ const LoginForm = ({ isRegister = false }) => {
           window.location.href = "/dashboard";
         }, 1500);
       }
-
+  
     } catch (error) {
       toast.error("Erreur de connexion au serveur");
     }
   };
+  
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md animate-fade-in">

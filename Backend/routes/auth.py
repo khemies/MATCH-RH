@@ -26,21 +26,25 @@ def register():
     return jsonify({"message": "Utilisateur enregistré avec succès"}), 201
 
 
+from flask_jwt_extended import create_access_token
+from werkzeug.security import check_password_hash  # déjà utilisé je pense
+from flask import jsonify, request, current_app
+
 @auth_blueprint.route("/login", methods=["POST"])
 def login():
-    data = request.json
+    data = request.get_json()
     email = data.get("email")
     password = data.get("password")
 
-    mongo = current_app.mongo
-    users = mongo.db.users
-    user = users.find_one({"email": email})
+    user = current_app.mongo.db.users.find_one({"email": email})
 
-    if not user or not check_password_hash(user["password"], password):
-        return jsonify({"error": "Identifiants invalides"}), 401
-
-    return jsonify({
-        "message": "Connexion réussie",
-        "role": user["role"],
-        "user_id": str(user["_id"])
-    }), 200
+    if user and check_password_hash(user["password"], password):
+        access_token = create_access_token(identity=str(user["_id"]))  # <-- Clé
+        return jsonify({
+            "message": "Connexion réussie",
+            "token": access_token,
+            "user_id": str(user["_id"]),
+            "role": user.get("role", "recruteur")
+        }), 200
+    else:
+        return jsonify({"message": "Identifiants invalides"}), 401

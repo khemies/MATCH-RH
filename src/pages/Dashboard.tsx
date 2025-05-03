@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
+import axios from "axios";
 import { 
   Card, 
   CardContent, 
@@ -42,7 +43,7 @@ const Dashboard = () => {
                 Tableau de bord {userType === "candidate" ? "Candidat" : "Recruteur"}
               </h1>
               <p className="text-gray-600 mt-1">
-                Bienvenue, {userType === "candidate" ? "Thomas Dubois" : "Sophie Martin"}
+                Bienvenue,
               </p>
             </div>
             
@@ -210,17 +211,37 @@ const CandidateContent = () => {
 };
 
 const RecruiterContent = () => {
+  const [offers, setOffers] = useState([]);
+  const [recruiterId, setRecruiterId] = useState("");
+
+  useEffect(() => {
+    // Simulation de récupération de l'utilisateur connecté depuis le localStorage
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const id = storedUser?.id || "1"; // par défaut "1" si rien trouvé
+    setRecruiterId(id);
+
+    axios.get(`http://localhost:5000/recruiter/${id}/offers`)
+      .then(response => {
+        setOffers(response.data);
+      })
+      .catch(error => {
+        console.error("Erreur lors de la récupération des offres :", error);
+      });
+  }, []);
+
   return (
     <>
       <h2 className="text-2xl font-semibold mb-4">Vos offres d'emploi actives</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-        {[1, 2].map((job) => (
-          <Card key={job}>
+        {offers.map((offer) => (
+          <Card key={offer.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle>Ingénieur DevOps</CardTitle>
-                  <CardDescription>CDI • Paris • 45K-60K €</CardDescription>
+                  <CardTitle>{offer.title}</CardTitle>
+                  <CardDescription>
+                    {offer.typeContrat} • {offer.lieu} • {offer.salaire}
+                  </CardDescription>
                 </div>
                 <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                   Active
@@ -228,62 +249,14 @@ const RecruiterContent = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="mb-4 space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Vues</span>
-                  <span className="font-medium">243</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Candidatures</span>
-                  <span className="font-medium">18</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Correspondances</span>
-                  <span className="font-medium">7</span>
-                </div>
-              </div>
+              <p className="text-sm text-gray-600 line-clamp-2">
+                {offer.description}
+              </p>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <span className="text-sm text-gray-500">Publiée il y a 5 jours</span>
+              <span className="text-sm text-gray-500">Publiée le {offer.datePublication}</span>
               <Button size="sm" variant="outline">
                 Voir les candidats
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-      
-      <h2 className="text-2xl font-semibold mb-4">Candidats recommandés</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-        {[1, 2, 3].map((candidate) => (
-          <Card key={candidate} className="overflow-hidden">
-            <div className="h-12 bg-career-blue"></div>
-            <CardHeader className="relative pt-12">
-              <div className="absolute -top-8 left-4 w-16 h-16 rounded-full bg-white flex items-center justify-center border-4 border-white">
-                <User className="h-10 w-10 text-career-blue" />
-              </div>
-              <CardTitle className="text-lg">Thomas Dubois</CardTitle>
-              <CardDescription>Développeur Full Stack</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-2 flex-wrap mb-4">
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">React</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Node.js</span>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">TypeScript</span>
-              </div>
-              <p className="text-sm text-gray-600 mb-2">
-                5 ans d'expérience • Paris, France
-              </p>
-              <p className="text-sm text-gray-500 line-clamp-3">
-                Développeur passionné avec expérience dans le développement web et mobile...
-              </p>
-            </CardContent>
-            <CardFooter className="flex gap-2">
-              <Button size="sm" className="bg-career-blue hover:bg-career-darkblue">
-                Contacter
-              </Button>
-              <Button size="sm" variant="outline">
-                Voir le profil
               </Button>
             </CardFooter>
           </Card>
@@ -292,5 +265,6 @@ const RecruiterContent = () => {
     </>
   );
 };
+
 
 export default Dashboard;

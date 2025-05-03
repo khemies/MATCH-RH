@@ -1,13 +1,33 @@
-
 import React from "react";
 import { useForm } from "react-hook-form";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Briefcase, Building, Calendar, FileText } from "lucide-react";
 
@@ -30,13 +50,41 @@ const AddJobOffer = () => {
     },
   });
 
-  const onSubmit = (data: JobFormValues) => {
-    // Ici, vous intégrerez la logique pour enregistrer l'offre d'emploi
-    console.log("Données de l'offre soumises:", data);
-    toast({
-      title: "Offre créée",
-      description: "Votre offre d'emploi a été publiée avec succès.",
-    });
+  const onSubmit = async (data: JobFormValues) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/offres/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast({
+          title: "Erreur",
+          description: result.error || "Une erreur est survenue.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Offre créée",
+        description: result.message,
+      });
+
+      form.reset(); // Réinitialiser le formulaire
+
+    } catch (error) {
+      toast({
+        title: "Erreur réseau",
+        description: "Impossible de contacter le serveur.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
