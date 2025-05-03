@@ -32,3 +32,19 @@ def ajouter_offre():
         return jsonify({"message": "Offre ajoutée avec succès"}), 201
     except Exception as e:
         return jsonify({"error": f"Erreur lors de l'ajout: {str(e)}"}), 500
+
+@offre_blueprint.route("/list", methods=["GET"])
+def lister_offres():
+    try:
+        # Récupérer toutes les offres dans la collection "offres"
+        offres_cursor = current_app.mongo.db.offres.find()
+        offres = []
+
+        # Convertir ObjectId en string pour chaque offre
+        for offre in offres_cursor:
+            offre["_id"] = str(offre["_id"])  # Convertir l'ObjectId en string
+            offres.append(offre)
+
+        return jsonify(offres), 200
+    except Exception as e:
+        return jsonify({"error": f"Erreur lors de la récupération des offres: {str(e)}"}), 500
