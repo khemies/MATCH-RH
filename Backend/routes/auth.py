@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -26,9 +27,7 @@ def register():
     return jsonify({"message": "Utilisateur enregistré avec succès"}), 201
 
 
-from flask_jwt_extended import create_access_token
-from werkzeug.security import check_password_hash  # déjà utilisé je pense
-from flask import jsonify, request, current_app
+
 
 @auth_blueprint.route("/login", methods=["POST"])
 def login():

@@ -1,5 +1,5 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useForm } from "react-hook-form";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ const skillsList = [
 const EditProfile = () => {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvFileName, setCvFileName] = useState<string>("");
-  
+
   const form = useForm<ProfileFormValues>({
     defaultValues: {
       location: "",
@@ -57,10 +57,39 @@ const EditProfile = () => {
     },
   });
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:5000/api/profile/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const profileData = response.data;
+        form.reset({
+          location: profileData.location || "",
+          availability: profileData.availability || "immediate",
+          profile: profileData.profile || "",
+          strengths: profileData.strengths || [],
+          skills: profileData.skills || [],
+        });
+
+        if (profileData.cv_filename) {
+          setCvFileName(profileData.cv_filename);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération du profil :", error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   const handleCvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Vérifier que c'est un PDF ou un DOCX
       if (file.type === "application/pdf" || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
         setCvFile(file);
         setCvFileName(file.name);
@@ -78,16 +107,35 @@ const EditProfile = () => {
     }
   };
 
-  const onSubmit = (data: ProfileFormValues) => {
-    // Ici, vous intégrerez la logique pour enregistrer le profil et le CV
-    console.log("Données du profil soumises:", data);
-    console.log("CV téléchargé:", cvFile);
-    toast({
-      title: "Profil mis à jour",
-      description: "Votre profil a été mis à jour avec succès.",
-    });
-  };
+  const onSubmit = async (data: ProfileFormValues) => {
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(data));
+      if (cvFile) {
+        formData.append("cv", cvFile);
+      }
 
+      await axios.put("http://localhost:5000/api/profiles/upload_cv", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast({
+        title: "Profil mis à jour",
+        description: "Votre profil a été mis à jour avec succès.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour du profil.",
+        variant: "destructive",
+      });
+      console.error("Erreur de soumission :", error);
+    }
+  };
   return (
     <>
       <Header />

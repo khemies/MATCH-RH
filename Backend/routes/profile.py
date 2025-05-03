@@ -1,62 +1,37 @@
-
 from flask import Blueprint, request, jsonify, current_app
+import json
 import os
-from werkzeug.utils import secure_filename
-
-profile_blueprint = Blueprint('profile', __name__)
-
-ALLOWED_EXTENSIONS = {'pdf', 'docx'}
-UPLOAD_FOLDER = 'uploads/cv'
-
-# Vérifier si le dossier d'upload existe, sinon le créer
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-@profile_blueprint.route('/upload-cv', methods=['POST'])
+profile_blueprint = Blueprint("profile", __name__)
+@profile_blueprint.route("/upload_cv", methods=["PUT"])
 def upload_cv():
-    # Vérifier si l'utilisateur est authentifié
-    user_id = request.form.get('user_id')
-    if not user_id:
-        return jsonify({"error": "Utilisateur non authentifié"}), 401
-    
-    # Vérifier si un fichier est présent dans la requête
-    if 'cv' not in request.files:
-        return jsonify({"error": "Aucun fichier trouvé"}), 400
-        
-    file = request.files['cv']
-    
-    # Si l'utilisateur n'a pas sélectionné de fichier
-    if file.filename == '':
-        return jsonify({"error": "Aucun fichier sélectionné"}), 400
-        
-    if file and allowed_file(file.filename):
-        # Sécuriser le nom du fichier
-        filename = secure_filename(file.filename)
-        
-        # Créer un nom unique pour le fichier basé sur l'ID utilisateur
-        extension = filename.rsplit('.', 1)[1].lower()
-        new_filename = f"{user_id}_cv.{extension}"
-        
-        # Sauvegarder le fichier
-        file_path = os.path.join(UPLOAD_FOLDER, new_filename)
-        file.save(file_path)
-        
-        # Mettre à jour la référence au CV dans la base de données MongoDB
-        mongo = current_app.mongo
-        users = mongo.db.users
-        
-        users.update_one(
-            {"_id": user_id}, 
-            {"$set": {"cv_path": file_path}}
-        )
-        
-        return jsonify({
-            "message": "CV téléchargé avec succès",
-            "file_path": file_path
-        }), 201
-    
-    return jsonify({"error": "Type de fichier non autorisé"}), 400
+    # Récupère les données du formulaire
+    data_str = request.form.get("data")
+    if not data_str:
+        return jsonify({"message": "Données du profil manquantes"}), 400
+
+    try:
+        data = json.loads(data_str)
+    except Exception as e:
+        return jsonify({"message": "Erreur de parsing JSON", "error": str(e)}), 400
+
+    profile_data = {
+        "location": data.get("location", ""),
+        "availability": data.get("availability", "immediate"),
+        "profile": data.get("profile", ""),
+        "strengths": data.get("strengths", []),
+        "skills": data.get("skills", []),
+    }
+
+    # Vérifie si un CV est présent
+    if "cv" in request.files:
+        cv = request.files["cv"]
+        if cv:
+            filename = cv.filename
+            upload_path = os.path.join("uploads", filename)
+            cv.save(upload_path)
+            profile_data["cv_filename"] = filename
+
+    # Insertion simple dans MongoDB (sans utilisateur)
+    result = current_app.mongo.db.profiles.insert_one(profile_data)
+
+    return jsonify({"message": "Profil enregistré avec succès", "id": str(result.inserted_id)}), 201
