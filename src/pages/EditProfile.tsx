@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/ui/use-toast";
-import { User, MapPin, Calendar, Star, Check, Edit } from "lucide-react";
+import { User, MapPin, Calendar, Star, Check, Edit, FileText, Upload } from "lucide-react";
 
 type ProfileFormValues = {
   location: string;
@@ -44,6 +44,9 @@ const skillsList = [
 ];
 
 const EditProfile = () => {
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [cvFileName, setCvFileName] = useState<string>("");
+  
   const form = useForm<ProfileFormValues>({
     defaultValues: {
       location: "",
@@ -54,9 +57,31 @@ const EditProfile = () => {
     },
   });
 
+  const handleCvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Vérifier que c'est un PDF ou un DOCX
+      if (file.type === "application/pdf" || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+        setCvFile(file);
+        setCvFileName(file.name);
+        toast({
+          title: "CV téléchargé",
+          description: `Le fichier ${file.name} a été téléchargé avec succès.`,
+        });
+      } else {
+        toast({
+          title: "Format de fichier non supporté",
+          description: "Veuillez télécharger un fichier PDF ou DOCX.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const onSubmit = (data: ProfileFormValues) => {
-    // Ici, vous intégrerez la logique pour enregistrer le profil
+    // Ici, vous intégrerez la logique pour enregistrer le profil et le CV
     console.log("Données du profil soumises:", data);
+    console.log("CV téléchargé:", cvFile);
     toast({
       title: "Profil mis à jour",
       description: "Votre profil a été mis à jour avec succès.",
@@ -150,6 +175,56 @@ const EditProfile = () => {
                       </FormItem>
                     )}
                   />
+
+                  {/* Section de téléchargement du CV */}
+                  <div className="space-y-3">
+                    <FormLabel className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      CV
+                    </FormLabel>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      <div className="space-y-2">
+                        <div className="flex justify-center">
+                          <Upload className="h-10 w-10 text-gray-400" />
+                        </div>
+                        {cvFileName ? (
+                          <div className="flex flex-col items-center">
+                            <p className="text-sm font-medium">CV téléchargé: {cvFileName}</p>
+                            <Button 
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setCvFile(null);
+                                setCvFileName("");
+                              }}
+                              className="mt-2"
+                            >
+                              Supprimer
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-base font-medium">Déposez votre CV ici ou</p>
+                            <div>
+                              <label htmlFor="cv-upload" className="inline-block bg-career-blue hover:bg-career-darkblue text-white font-medium py-2 px-4 rounded cursor-pointer text-sm">
+                                Parcourir les fichiers
+                              </label>
+                              <input 
+                                id="cv-upload" 
+                                name="cv-upload" 
+                                type="file" 
+                                accept=".pdf,.docx" 
+                                onChange={handleCvUpload}
+                                className="hidden" 
+                              />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">Formats acceptés : PDF, DOCX (max 5MB)</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
                   <FormField
                     control={form.control}
