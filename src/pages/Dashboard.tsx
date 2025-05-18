@@ -9,7 +9,7 @@ import CandidateContent from "@/components/dashboard/CandidateContent";
 import RecruiterContent from "@/components/dashboard/RecruiterContent";
 
 const Dashboard = () => {
-  const [userType, setUserType] = useState<"candidate" | "recruiter" | "">("");
+  const [userType, setUserType] = useState<"candidate" | "recruiter">("candidate");
   const [isLoading, setIsLoading] = useState(true);
   const [userPseudo, setUserPseudo] = useState("");
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ const Dashboard = () => {
     // Détermine le type d'utilisateur en fonction du rôle stocké
     // Conversion du rôle stocké (candidat/recruteur) en type (candidate/recruiter)
     const type = userRole === "candidat" ? "candidate" : "recruiter";
-    setUserType(type as "candidate" | "recruiter");
+    setUserType(type);
     setUserPseudo(pseudo);
     setIsLoading(false);
   }, [navigate]);
