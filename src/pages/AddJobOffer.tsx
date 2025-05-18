@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useForm } from "react-hook-form";
 import Header from "@/components/Header";
@@ -28,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Briefcase, Building, Calendar, FileText } from "lucide-react";
 
 type JobFormValues = {
@@ -52,12 +53,31 @@ const AddJobOffer = () => {
 
   const onSubmit = async (data: JobFormValues) => {
     try {
+      // Récupération des données de l'utilisateur depuis localStorage
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const recruiterId = storedUser?.id;
+      
+      if (!recruiterId) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour publier une offre.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Ajout de l'ID du recruteur aux données de l'offre
+      const offerData = {
+        ...data,
+        recruiterId: recruiterId
+      };
+
       const response = await fetch("http://localhost:5000/api/offres/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(offerData),
       });
 
       const result = await response.json();
@@ -66,7 +86,6 @@ const AddJobOffer = () => {
         toast({
           title: "Erreur",
           description: result.error || "Une erreur est survenue.",
-          variant: "destructive",
         });
         return;
       }
@@ -82,7 +101,6 @@ const AddJobOffer = () => {
       toast({
         title: "Erreur réseau",
         description: "Impossible de contacter le serveur.",
-        variant: "destructive",
       });
     }
   };
