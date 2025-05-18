@@ -45,7 +45,7 @@ def lister_offres():
     except Exception as e:
         return jsonify({"error": f"Erreur lors de la récupération: {str(e)}"}), 500
 
-# Ajout d'une nouvelle route pour récupérer les offres par ID de recruteur
+# Route pour récupérer les offres par ID de recruteur
 @offre_blueprint.route("/recruiter/<recruteur_id>", methods=["GET"])
 def lister_offres_recruteur(recruteur_id):
     try:
