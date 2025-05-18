@@ -58,11 +58,7 @@ const AddJobOffer = () => {
       const recruiterId = storedUser?.id;
       
       if (!recruiterId) {
-        toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour publier une offre.",
-          variant: "destructive",
-        });
+        toast.error("Vous devez être connecté pour publier une offre.");
         return;
       }
 
@@ -83,25 +79,16 @@ const AddJobOffer = () => {
       const result = await response.json();
 
       if (!response.ok) {
-        toast({
-          title: "Erreur",
-          description: result.error || "Une erreur est survenue.",
-        });
+        toast.error(result.error || "Une erreur est survenue.");
         return;
       }
 
-      toast({
-        title: "Offre créée",
-        description: result.message,
-      });
+      toast.success(result.message || "Offre créée avec succès");
 
       form.reset(); // Réinitialiser le formulaire
 
     } catch (error) {
-      toast({
-        title: "Erreur réseau",
-        description: "Impossible de contacter le serveur.",
-      });
+      toast.error("Impossible de contacter le serveur.");
     }
   };
 
