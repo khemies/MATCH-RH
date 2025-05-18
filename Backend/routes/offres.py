@@ -38,4 +38,19 @@ def ajouter_offre():
 
 @offre_blueprint.route("/list", methods=["GET"])
 def lister_offres():
-    # ... keep existing code (list offers functionality)
+    try:
+        # Récupération des offres depuis la base de données
+        offres = list(current_app.mongo.db.offres.find({}, {"_id": 0}))
+        return jsonify(offres), 200
+    except Exception as e:
+        return jsonify({"error": f"Erreur lors de la récupération: {str(e)}"}), 500
+
+# Ajout d'une nouvelle route pour récupérer les offres par ID de recruteur
+@offre_blueprint.route("/recruiter/<recruteur_id>", methods=["GET"])
+def lister_offres_recruteur(recruteur_id):
+    try:
+        # Récupération des offres du recruteur spécifié
+        offres = list(current_app.mongo.db.offres.find({"recruteur_id": recruteur_id}, {"_id": 0}))
+        return jsonify(offres), 200
+    except Exception as e:
+        return jsonify({"error": f"Erreur lors de la récupération: {str(e)}"}), 500
