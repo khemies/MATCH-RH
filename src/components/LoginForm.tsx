@@ -11,11 +11,12 @@ const LoginForm = ({ isRegister = false }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState("");
+  const [pseudo, setPseudo] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
-    if (!email || !password || (isRegister && !userType)) {
+    if (!email || !password || (isRegister && (!userType || !pseudo))) {
       toast.error("Veuillez remplir tous les champs");
       return;
     }
@@ -36,7 +37,7 @@ const LoginForm = ({ isRegister = false }) => {
         body: JSON.stringify({
           email,
           password,
-          ...(isRegister ? { role } : {}),
+          ...(isRegister ? { role, pseudo } : {}),
         }),
       });
   
@@ -54,7 +55,8 @@ const LoginForm = ({ isRegister = false }) => {
         localStorage.setItem("user", JSON.stringify({
           id: data.user_id,
           role: data.role,
-          token: data.token
+          token: data.token,
+          pseudo: data.pseudo // Stocker le pseudo de l'utilisateur
         }));
       }
   
@@ -87,6 +89,8 @@ const LoginForm = ({ isRegister = false }) => {
           <UserTypeSelector
             userType={userType}
             onChange={(type) => setUserType(type)}
+            pseudo={pseudo}
+            onPseudoChange={setPseudo}
           />
         )}
 

@@ -18,12 +18,14 @@ import { toast } from "sonner";
 const Dashboard = () => {
   const [userType, setUserType] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [userPseudo, setUserPseudo] = useState("");
   const navigate = useNavigate();
   
   useEffect(() => {
     // Récupère le user depuis le localStorage
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     const userRole = userData?.role;
+    const pseudo = userData?.pseudo || "Utilisateur";
     
     if (!userRole) {
       // Redirection vers la page de connexion si le rôle n'est pas défini
@@ -36,6 +38,7 @@ const Dashboard = () => {
     // Conversion du rôle stocké (candidat/recruteur) en type (candidate/recruiter)
     const type = userRole === "candidat" ? "candidate" : "recruiter";
     setUserType(type);
+    setUserPseudo(pseudo);
     setIsLoading(false);
   }, [navigate]);
 
@@ -64,7 +67,7 @@ const Dashboard = () => {
                 Tableau de bord {userType === "candidate" ? "Candidat" : "Recruteur"}
               </h1>
               <p className="text-gray-600 mt-1">
-                Bienvenue,
+                Bienvenue, <span className="font-medium text-career-blue">{userPseudo}</span>
               </p>
             </div>
             
