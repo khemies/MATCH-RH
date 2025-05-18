@@ -34,8 +34,6 @@ def register():
     return jsonify({"message": "Utilisateur enregistré avec succès"}), 201
 
 
-
-
 @auth_blueprint.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
