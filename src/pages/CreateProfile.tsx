@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
@@ -53,13 +52,11 @@ const CreateProfile = () => {
       if (file.type === "application/pdf" || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
         setCvFile(file);
         setCvFileName(file.name);
-        toast({
-          title: "CV téléchargé",
+        toast("CV téléchargé", {
           description: `Le fichier ${file.name} a été téléchargé avec succès.`,
         });
       } else {
-        toast({
-          title: "Format de fichier non supporté",
+        toast("Format de fichier non supporté", {
           description: "Veuillez télécharger un fichier PDF ou DOCX.",
           variant: "destructive",
         });
