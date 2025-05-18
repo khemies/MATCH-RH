@@ -1,8 +1,79 @@
 
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger 
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Settings, LogOut, User, Trash } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
 
 const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userPseudo, setUserPseudo] = useState<string>("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    if (userData.token) {
+      setIsLoggedIn(true);
+      setUserRole(userData.role);
+      setUserPseudo(userData.pseudo || "Utilisateur");
+    } else {
+      setIsLoggedIn(false);
+      setUserRole(null);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUserRole(null);
+    toast.success("Déconnexion réussie");
+    navigate("/");
+  };
+
+  const handleDeleteProfile = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      const token = userData.token;
+      
+      if (!token) {
+        toast.error("Veuillez vous connecter pour effectuer cette action");
+        return;
+      }
+      
+      await axios.delete("http://localhost:5000/api/profiles/delete", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      toast.success("Votre profil a été supprimé avec succès");
+      setConfirmDelete(false);
+    } catch (error) {
+      console.error("Erreur lors de la suppression du profil:", error);
+      toast.error("Une erreur est survenue lors de la suppression du profil");
+    }
+  };
+
   return (
     <header className="w-full py-4 px-6 lg:px-10 bg-white shadow-sm fixed top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -12,20 +83,91 @@ const Header = () => {
 
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className="text-gray-600 hover:text-career-blue transition-colors">Accueil</Link>
-          <Link to="/dashboard" className="text-gray-600 hover:text-career-blue transition-colors">Tableau de bord</Link>
-          <Link to="/messaging" className="text-gray-600 hover:text-career-blue transition-colors">Messages</Link>
-          <Link to="/calendar" className="text-gray-600 hover:text-career-blue transition-colors">Calendrier</Link>
+          {isLoggedIn && (
+            <Link to="/dashboard" className="text-gray-600 hover:text-career-blue transition-colors">Tableau de bord</Link>
+          )}
+          {isLoggedIn && (
+            <Link to="/messaging" className="text-gray-600 hover:text-career-blue transition-colors">Messages</Link>
+          )}
+          {isLoggedIn && (
+            <Link to="/calendar" className="text-gray-600 hover:text-career-blue transition-colors">Calendrier</Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" asChild>
-            <Link to="/login">Connexion</Link>
-          </Button>
-          <Button className="bg-career-blue hover:bg-career-darkblue text-white" asChild>
-            <Link to="/register">S'inscrire</Link>
-          </Button>
+          {isLoggedIn ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600 hidden md:inline-block">
+                Bonjour, {userPseudo}
+              </span>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    <span className="hidden md:inline">Options</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  
+                  {userRole === "candidat" && (
+                    <DropdownMenuItem onClick={() => navigate("/edit-profile")} className="cursor-pointer">
+                      <User className="h-4 w-4 mr-2" />
+                      Modifier mon profil
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {userRole === "candidat" && (
+                    <>
+                      <DropdownMenuItem className="cursor-pointer text-red-500" onClick={() => setConfirmDelete(true)}>
+                        <Trash className="h-4 w-4 mr-2" />
+                        Supprimer mon profil
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  
+                  <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : (
+            <>
+              <Button variant="outline" asChild>
+                <Link to="/login">Connexion</Link>
+              </Button>
+              <Button className="bg-career-blue hover:bg-career-darkblue text-white" asChild>
+                <Link to="/register">S'inscrire</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
+      
+      {/* Dialogue de confirmation de suppression de profil */}
+      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer mon profil</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer votre profil ? Cette action est irréversible et toutes vos données de profil seront perdues.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDelete(false)}>
+              Annuler
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteProfile}>
+              Oui, supprimer mon profil
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 };

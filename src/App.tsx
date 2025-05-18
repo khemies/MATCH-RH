@@ -12,6 +12,7 @@ import LoginForm from "./components/LoginForm";
 import NotFound from "./pages/NotFound";
 import AddJobOffer from "./pages/AddJobOffer";
 import EditProfile from "./pages/EditProfile";
+import CreateProfile from "./pages/CreateProfile";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/register" element={<div className="min-h-screen flex items-center justify-center bg-career-gray px-4"><LoginForm isRegister={true} /></div>} />
           <Route path="/add-job-offer" element={<AddJobOffer />} />
           <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/create-profile" element={<CreateProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

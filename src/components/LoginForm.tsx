@@ -3,15 +3,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import UserTypeSelector from "./UserTypeSelector";
 import { toast } from 'sonner';
+import axios from "axios";
 
 const LoginForm = ({ isRegister = false }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState("");
   const [pseudo, setPseudo] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,27 +54,44 @@ const LoginForm = ({ isRegister = false }) => {
   
       // Stockage des données utilisateur dans le localStorage
       if (!isRegister) {
-        localStorage.setItem("user", JSON.stringify({
+        const userData = {
           id: data.user_id,
           role: data.role,
           token: data.token,
-          pseudo: data.pseudo // Stocker le pseudo de l'utilisateur
-        }));
-      }
-  
-      // Rediriger après l'inscription ou la connexion
-      if (isRegister) {
-        // Si l'utilisateur vient de s'inscrire, rediriger vers la page de connexion
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 1500);
+          pseudo: data.pseudo
+        };
+        
+        localStorage.setItem("user", JSON.stringify(userData));
+        
+        // Si l'utilisateur est un candidat, vérifier s'il a déjà un profil
+        if (data.role === "candidat") {
+          try {
+            const profileRes = await axios.get("http://localhost:5000/api/profiles/check", {
+              headers: {
+                Authorization: `Bearer ${data.token}`
+              }
+            });
+            
+            if (profileRes.data.exists) {
+              // Profil existe, redirection vers le dashboard
+              navigate("/dashboard");
+            } else {
+              // Pas de profil, redirection vers la page de création de profil
+              navigate("/create-profile");
+            }
+          } catch (error) {
+            console.error("Erreur lors de la vérification du profil:", error);
+            // En cas d'erreur, rediriger vers le tableau de bord par défaut
+            navigate("/dashboard");
+          }
+        } else {
+          // Si c'est un recruteur, rediriger directement vers le dashboard
+          navigate("/dashboard");
+        }
       } else {
-        // Si l'utilisateur se connecte, rediriger vers le dashboard
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1500);
+        // Si l'utilisateur vient de s'inscrire, rediriger vers la page de connexion
+        navigate("/login");
       }
-  
     } catch (error) {
       toast.error("Erreur de connexion au serveur");
     }

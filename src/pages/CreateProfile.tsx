@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,9 +32,10 @@ const strengthsList = [
   "Résolution de problèmes"
 ];
 
-const EditProfile = () => {
+const CreateProfile = () => {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvFileName, setCvFileName] = useState<string>("");
+  const navigate = useNavigate();
 
   const form = useForm<ProfileFormValues>({
     defaultValues: {
@@ -43,43 +46,6 @@ const EditProfile = () => {
       skills: ""
     },
   });
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const userData = JSON.parse(localStorage.getItem("user") || "{}");
-        const token = userData.token;
-        
-        if (!token) {
-          toast.error("Veuillez vous connecter pour accéder à votre profil");
-          return;
-        }
-        
-        const response = await axios.get("http://localhost:5000/api/profiles/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const profileData = response.data;
-        form.reset({
-          location: profileData.location || "",
-          availability: profileData.availability || "immediate",
-          profile: profileData.profile || "",
-          strengths: profileData.strengths || [],
-          skills: Array.isArray(profileData.skills) ? profileData.skills.join(", ") : profileData.skills || "",
-        });
-
-        if (profileData.cv_filename) {
-          setCvFileName(profileData.cv_filename);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération du profil :", error);
-      }
-    };
-
-    fetchProfile();
-  }, []);
 
   const handleCvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -106,12 +72,13 @@ const EditProfile = () => {
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
       const token = userData.token;
       const userId = userData.id;
-      
+
       if (!token || !userId) {
-        toast.error("Veuillez vous connecter pour modifier votre profil");
+        toast.error("Veuillez vous connecter pour créer votre profil");
+        navigate("/login");
         return;
       }
-      
+
       const formData = new FormData();
       const dataWithUserId = {
         ...data,
@@ -131,28 +98,32 @@ const EditProfile = () => {
         },
       });
 
-      toast.success("Profil mis à jour avec succès !");
+      toast.success("Profil créé avec succès !");
+      
+      // Rediriger vers le tableau de bord après la création du profil
+      navigate("/dashboard");
+      
     } catch (error) {
-      toast.error("Une erreur est survenue lors de la mise à jour du profil.");
+      toast.error("Une erreur est survenue lors de la création du profil.");
       console.error("Erreur de soumission :", error);
     }
   };
-  
+
   return (
     <>
       <Header />
       <div className="min-h-screen bg-career-lightgray pt-24 px-6 pb-12">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-8 flex items-center gap-2">
-            <Edit className="h-6 w-6" />
-            Modifier votre profil
+            <User className="h-6 w-6" />
+            Compléter votre profil
           </h1>
-
+          
           <Card>
             <CardHeader>
               <CardTitle>Informations personnelles</CardTitle>
               <CardDescription>
-                Mettez à jour vos informations pour optimiser vos chances de correspondance avec les offres
+                Remplissez votre profil pour augmenter vos chances de trouver le poste idéal
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -226,7 +197,6 @@ const EditProfile = () => {
                     )}
                   />
 
-                  {/* Section de téléchargement du CV */}
                   <div className="space-y-3">
                     <FormLabel className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
@@ -373,7 +343,7 @@ const EditProfile = () => {
 
                   <CardFooter className="flex justify-end pt-6 px-0">
                     <Button type="submit" className="bg-career-blue hover:bg-career-darkblue">
-                      Enregistrer les modifications
+                      Créer mon profil
                     </Button>
                   </CardFooter>
                 </form>
@@ -386,4 +356,4 @@ const EditProfile = () => {
   );
 };
 
-export default EditProfile;
+export default CreateProfile;
