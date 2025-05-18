@@ -13,16 +13,31 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Users, MessageSquare, Calendar, Star, Briefcase } from "lucide-react";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const [userType, setUserType] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Dans une vrai application, cela viendrait de l'état d'authentification
-    // Pour la démo, on simule un type d'utilisateur aléatoire
-    setUserType(Math.random() > 0.5 ? "candidate" : "recruiter");
-  }, []);
+    // Récupère le user depuis le localStorage
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    const userRole = userData?.role;
+    
+    if (!userRole) {
+      // Redirection vers la page de connexion si le rôle n'est pas défini
+      toast.error("Veuillez vous connecter pour accéder à votre tableau de bord");
+      navigate("/login");
+      return;
+    }
+    
+    // Détermine le type d'utilisateur en fonction du rôle stocké
+    // Conversion du rôle stocké (candidat/recruteur) en type (candidate/recruiter)
+    const type = userRole === "candidat" ? "candidate" : "recruiter";
+    setUserType(type);
+    setIsLoading(false);
+  }, [navigate]);
 
   const handleActionButtonClick = () => {
     if (userType === "candidate") {
@@ -31,6 +46,12 @@ const Dashboard = () => {
       navigate("/add-job-offer");
     }
   };
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-career-gray pt-24 flex justify-center items-center">
+      <p>Chargement de votre tableau de bord...</p>
+    </div>;
+  }
 
   return (
     <>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,9 @@ const LoginForm = ({ isRegister = false }) => {
       ? "http://localhost:5000/api/auth/register"
       : "http://localhost:5000/api/auth/login";
   
+    // Conversion du type d'utilisateur pour correspondre au format du backend
+    const role = userType === "candidate" ? "candidat" : "recruteur";
+    
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -32,7 +36,7 @@ const LoginForm = ({ isRegister = false }) => {
         body: JSON.stringify({
           email,
           password,
-          ...(isRegister ? { role: userType } : {}),
+          ...(isRegister ? { role } : {}),
         }),
       });
   
@@ -45,9 +49,13 @@ const LoginForm = ({ isRegister = false }) => {
   
       toast.success(data.message || "Succès !");
   
-      // Si c'est une connexion, on stocke l'ID du recruteur
+      // Stockage des données utilisateur dans le localStorage
       if (!isRegister) {
-        localStorage.setItem("recruiter_id", data.user_id);  // Stocke l'ID du recruteur
+        localStorage.setItem("user", JSON.stringify({
+          id: data.user_id,
+          role: data.role,
+          token: data.token
+        }));
       }
   
       // Rediriger après l'inscription ou la connexion
@@ -68,7 +76,6 @@ const LoginForm = ({ isRegister = false }) => {
     }
   };
   
-
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md animate-fade-in">
       <h2 className="text-2xl font-bold text-center mb-6">
