@@ -1,3 +1,4 @@
+
 from flask import Blueprint, request, jsonify, current_app
 import json
 import os
@@ -14,12 +15,20 @@ def upload_cv():
     except Exception as e:
         return jsonify({"message": "Erreur de parsing JSON", "error": str(e)}), 400
 
+    # Traite les compétences comme une chaîne de texte et la convertit en liste
+    skills = data.get("skills", "")
+    if isinstance(skills, str):
+        # Divise la chaîne par virgules et nettoie les espaces
+        skills_list = [skill.strip() for skill in skills.split(",") if skill.strip()]
+    else:
+        skills_list = skills
+
     profile_data = {
         "location": data.get("location", ""),
         "availability": data.get("availability", "immediate"),
         "profile": data.get("profile", ""),
         "strengths": data.get("strengths", []),
-        "skills": data.get("skills", []),
+        "skills": skills_list,
     }
 
     # Vérifie si un CV est présent

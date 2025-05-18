@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
@@ -16,7 +17,7 @@ type ProfileFormValues = {
   availability: string;
   profile: string;
   strengths: string[];
-  skills: string[];
+  skills: string;
 };
 
 const strengthsList = [
@@ -30,19 +31,6 @@ const strengthsList = [
   "Résolution de problèmes"
 ];
 
-const skillsList = [
-  "JavaScript",
-  "React",
-  "Node.js",
-  "TypeScript",
-  "HTML/CSS",
-  "SQL",
-  "Python",
-  "Java",
-  "PHP",
-  "C#"
-];
-
 const EditProfile = () => {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvFileName, setCvFileName] = useState<string>("");
@@ -53,7 +41,7 @@ const EditProfile = () => {
       availability: "immediate",
       profile: "",
       strengths: [],
-      skills: []
+      skills: ""
     },
   });
 
@@ -73,7 +61,7 @@ const EditProfile = () => {
           availability: profileData.availability || "immediate",
           profile: profileData.profile || "",
           strengths: profileData.strengths || [],
-          skills: profileData.skills || [],
+          skills: Array.isArray(profileData.skills) ? profileData.skills.join(", ") : profileData.skills || "",
         });
 
         if (profileData.cv_filename) {
@@ -348,45 +336,22 @@ const EditProfile = () => {
                   <FormField
                     control={form.control}
                     name="skills"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <Check className="h-4 w-4" />
                           Compétences
                         </FormLabel>
-                        <div className="grid grid-cols-2 gap-2">
-                          {skillsList.map((skill) => (
-                            <FormField
-                              key={skill}
-                              control={form.control}
-                              name="skills"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={skill}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(skill)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, skill])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== skill
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="font-normal">{skill}</FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
-                        </div>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Entrez vos compétences séparées par des virgules (ex: JavaScript, React, Python...)" 
+                            className="min-h-[100px]"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Listez vos compétences techniques et non-techniques, séparées par des virgules.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
