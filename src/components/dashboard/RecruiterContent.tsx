@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, ChevronUp, Briefcase, Building, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface Offer {
   titre: string;
@@ -25,10 +26,13 @@ interface Offer {
 }
 
 const RecruiterContent = () => {
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const [myOffers, setMyOffers] = useState<Offer[]>([]);
+  const [allOffers, setAllOffers] = useState<Offer[]>([]);
   const [recruiterId, setRecruiterId] = useState("");
   const [expandedOffers, setExpandedOffers] = useState<{[key: string]: boolean}>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMyOffers, setIsLoadingMyOffers] = useState(true);
+  const [isLoadingAllOffers, setIsLoadingAllOffers] = useState(true);
+  const [activeTab, setActiveTab] = useState("myOffers");
 
   useEffect(() => {
     const fetchOffers = async () => {
@@ -39,16 +43,24 @@ const RecruiterContent = () => {
         setRecruiterId(id);
         
         // Appel à l'API pour récupérer les offres du recruteur
-        const response = await axios.get(`http://localhost:5000/api/offres/recruiter/${id}`);
+        const myOffersResponse = await axios.get(`http://localhost:5000/api/offres/recruiter/${id}`);
         
-        if (response.data) {
-          setOffers(response.data);
+        if (myOffersResponse.data) {
+          setMyOffers(myOffersResponse.data);
+        }
+        
+        // Récupérer les 100 premières offres de la plateforme
+        const allOffersResponse = await axios.get("http://localhost:5000/api/offres/list?limit=100");
+        
+        if (allOffersResponse.data) {
+          setAllOffers(allOffersResponse.data);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des offres :", error);
-        toast.error("Impossible de récupérer vos offres d'emploi");
+        toast.error("Impossible de récupérer les offres d'emploi");
       } finally {
-        setIsLoading(false);
+        setIsLoadingMyOffers(false);
+        setIsLoadingAllOffers(false);
       }
     };
 
@@ -88,37 +100,41 @@ const RecruiterContent = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <p>Chargement de vos offres...</p>
-      </div>
-    );
-  }
+  // Fonction pour rendre la liste des offres
+  const renderOffersList = (offers: Offer[], isLoading: boolean, emptyMessage: string) => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center py-12">
+          <p>Chargement des offres...</p>
+        </div>
+      );
+    }
 
-  if (offers.length === 0) {
-    return (
-      <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
-        <h3 className="text-xl font-medium mb-2">Aucune offre publiée</h3>
-        <p className="text-gray-500 mb-4">Vous n'avez pas encore publié d'offres d'emploi.</p>
-        <Button 
-          className="bg-career-blue hover:bg-career-darkblue"
-          onClick={() => window.location.href = "/add-job-offer"}
-        >
-          Publier votre première offre
-        </Button>
-      </div>
-    );
-  }
+    if (offers.length === 0) {
+      return (
+        <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
+          <h3 className="text-xl font-medium mb-2">{emptyMessage}</h3>
+          {activeTab === "myOffers" && (
+            <>
+              <p className="text-gray-500 mb-4">Vous n'avez pas encore publié d'offres d'emploi.</p>
+              <Button 
+                className="bg-career-blue hover:bg-career-darkblue"
+                onClick={() => window.location.href = "/add-job-offer"}
+              >
+                Publier votre première offre
+              </Button>
+            </>
+          )}
+        </div>
+      );
+    }
 
-  return (
-    <>
-      <h2 className="text-2xl font-semibold mb-4">Vos offres d'emploi actives</h2>
+    return (
       <div className="space-y-4">
         {offers.map((offer, index) => (
           <Card key={index} className="overflow-hidden">
             <Collapsible
-              open={expandedOffers[index] || false}
+              open={expandedOffers[`${activeTab}-${index}`] || false}
               onOpenChange={() => toggleOfferExpansion(index)}
               className="w-full"
             >
@@ -144,7 +160,7 @@ const RecruiterContent = () => {
                     <Badge className="mr-3 bg-green-100 text-green-800 hover:bg-green-100">
                       Active
                     </Badge>
-                    {expandedOffers[index] ? (
+                    {expandedOffers[`${activeTab}-${index}`] ? (
                       <ChevronUp className="h-5 w-5 text-gray-500" />
                     ) : (
                       <ChevronDown className="h-5 w-5 text-gray-500" />
@@ -187,6 +203,25 @@ const RecruiterContent = () => {
           </Card>
         ))}
       </div>
+    );
+  };
+
+  return (
+    <>
+      <Tabs defaultValue="myOffers" className="w-full" onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-2 mb-6">
+          <TabsTrigger value="myOffers">Mes offres d'emploi</TabsTrigger>
+          <TabsTrigger value="allOffers">Autres offres sur la plateforme</TabsTrigger>
+        </TabsList>
+        <TabsContent value="myOffers" className="space-y-4">
+          <h2 className="text-2xl font-semibold mb-4">Mes offres d'emploi</h2>
+          {renderOffersList(myOffers, isLoadingMyOffers, "Aucune offre publiée")}
+        </TabsContent>
+        <TabsContent value="allOffers" className="space-y-4">
+          <h2 className="text-2xl font-semibold mb-4">Autres offres sur la plateforme</h2>
+          {renderOffersList(allOffers, isLoadingAllOffers, "Aucune offre disponible sur la plateforme")}
+        </TabsContent>
+      </Tabs>
     </>
   );
 };
