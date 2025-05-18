@@ -68,10 +68,10 @@ const RecruiterContent = () => {
   }, []);
 
   // Fonction pour basculer l'état d'expansion d'une offre
-  const toggleOfferExpansion = (index: number) => {
+  const toggleOfferExpansion = (tabKey: string, index: number) => {
     setExpandedOffers(prev => ({
       ...prev,
-      [index]: !prev[index]
+      [`${tabKey}-${index}`]: !prev[`${tabKey}-${index}`]
     }));
   };
 
@@ -101,7 +101,7 @@ const RecruiterContent = () => {
   };
 
   // Fonction pour rendre la liste des offres
-  const renderOffersList = (offers: Offer[], isLoading: boolean, emptyMessage: string) => {
+  const renderOffersList = (offers: Offer[], isLoading: boolean, emptyMessage: string, tabKey: string) => {
     if (isLoading) {
       return (
         <div className="flex justify-center items-center py-12">
@@ -114,7 +114,7 @@ const RecruiterContent = () => {
       return (
         <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
           <h3 className="text-xl font-medium mb-2">{emptyMessage}</h3>
-          {activeTab === "myOffers" && (
+          {tabKey === "myOffers" && (
             <>
               <p className="text-gray-500 mb-4">Vous n'avez pas encore publié d'offres d'emploi.</p>
               <Button 
@@ -133,13 +133,12 @@ const RecruiterContent = () => {
       <div className="space-y-4">
         {offers.map((offer, index) => (
           <Card key={index} className="overflow-hidden">
-            <Collapsible
-              open={expandedOffers[`${activeTab}-${index}`] || false}
-              onOpenChange={() => toggleOfferExpansion(index)}
-              className="w-full"
-            >
+            <div className="w-full">
               <CardHeader className="pb-2">
-                <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
+                <div 
+                  className="flex justify-between items-center w-full text-left cursor-pointer"
+                  onClick={() => toggleOfferExpansion(tabKey, index)}
+                >
                   <div className="flex items-center space-x-2">
                     <Briefcase className="h-5 w-5 text-career-blue" />
                     <div>
@@ -160,46 +159,48 @@ const RecruiterContent = () => {
                     <Badge className="mr-3 bg-green-100 text-green-800 hover:bg-green-100">
                       Active
                     </Badge>
-                    {expandedOffers[`${activeTab}-${index}`] ? (
+                    {expandedOffers[`${tabKey}-${index}`] ? (
                       <ChevronUp className="h-5 w-5 text-gray-500" />
                     ) : (
                       <ChevronDown className="h-5 w-5 text-gray-500" />
                     )}
                   </div>
-                </CollapsibleTrigger>
+                </div>
               </CardHeader>
 
-              <CollapsibleContent>
-                <CardContent className="pb-3 pt-1">
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-medium text-sm text-gray-500 mb-1">Description</h4>
-                      <p className="text-sm whitespace-pre-wrap">{offer.description}</p>
+              {expandedOffers[`${tabKey}-${index}`] && (
+                <>
+                  <CardContent className="pb-3 pt-1">
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-500 mb-1">Description</h4>
+                        <p className="text-sm whitespace-pre-wrap">{offer.description}</p>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-x-6 gap-y-2">
+                        {offer.experience && (
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-1 text-gray-500" />
+                            <span className="text-sm">
+                              Expérience: {formatExperience(offer.experience)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    
-                    <div className="flex flex-wrap gap-x-6 gap-y-2">
-                      {offer.experience && (
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1 text-gray-500" />
-                          <span className="text-sm">
-                            Expérience: {formatExperience(offer.experience)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-0 flex justify-between items-center">
-                  <span className="text-xs text-gray-500">ID: {index + 1}</span>
-                  <Button 
-                    variant="default"
-                    className="bg-career-blue hover:bg-career-darkblue"
-                  >
-                    Voir les candidats correspondants
-                  </Button>
-                </CardFooter>
-              </CollapsibleContent>
-            </Collapsible>
+                  </CardContent>
+                  <CardFooter className="pt-0 flex justify-between items-center">
+                    <span className="text-xs text-gray-500">ID: {index + 1}</span>
+                    <Button 
+                      variant="default"
+                      className="bg-career-blue hover:bg-career-darkblue"
+                    >
+                      Voir les candidats correspondants
+                    </Button>
+                  </CardFooter>
+                </>
+              )}
+            </div>
           </Card>
         ))}
       </div>
@@ -215,11 +216,11 @@ const RecruiterContent = () => {
         </TabsList>
         <TabsContent value="myOffers" className="space-y-4">
           <h2 className="text-2xl font-semibold mb-4">Mes offres d'emploi</h2>
-          {renderOffersList(myOffers, isLoadingMyOffers, "Aucune offre publiée")}
+          {renderOffersList(myOffers, isLoadingMyOffers, "Aucune offre publiée", "myOffers")}
         </TabsContent>
         <TabsContent value="allOffers" className="space-y-4">
           <h2 className="text-2xl font-semibold mb-4">Autres offres sur la plateforme</h2>
-          {renderOffersList(allOffers, isLoadingAllOffers, "Aucune offre disponible sur la plateforme")}
+          {renderOffersList(allOffers, isLoadingAllOffers, "Aucune offre disponible sur la plateforme", "allOffers")}
         </TabsContent>
       </Tabs>
     </>
