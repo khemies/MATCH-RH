@@ -10,6 +10,9 @@ import AddJobOffer from "./pages/AddJobOffer";
 import Messaging from "./pages/Messaging";
 import Calendar from "./pages/Calendar";
 import AllProfiles from "./pages/AllProfiles";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import './App.css';
 
 function App() {
@@ -25,6 +28,9 @@ function App() {
           <Route path="/messaging" element={<Messaging />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/all-profiles" element={<AllProfiles />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
