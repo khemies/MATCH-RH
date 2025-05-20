@@ -50,6 +50,7 @@ type JobFormValues = {
   Experience: string;
   missions?: string;
   profil?: string;
+  Description : string ;
   groupe_metier?: string;
   Lieu?: string;
 };
@@ -63,6 +64,7 @@ const AddJobOffer = () => {
       Contrat: "",
       Entreprise: "",
       Experience: "",
+      Description :"",
       missions: "",
       profil: "",
       groupe_metier: "",
@@ -247,10 +249,10 @@ const AddJobOffer = () => {
                               </FormControl>
                               <SelectContent>
                                 <SelectItem value="debutant">Débutant accepté</SelectItem>
-                                <SelectItem value="1-2">1 à 2 ans</SelectItem>
-                                <SelectItem value="3-5">3 à 5 ans</SelectItem>
-                                <SelectItem value="5-10">5 à 10 ans</SelectItem>
-                                <SelectItem value="10+">Plus de 10 ans</SelectItem>
+                                <SelectItem value=" moins de  12 mois"> moins de 12 mois </SelectItem>
+                                <SelectItem value="entre 12 et 24 mois ">entre 12 et 24 mois</SelectItem>
+                                <SelectItem value="entre 24 et 48 mois">"entre 24 et 48 mois"</SelectItem>
+                                <SelectItem value=" Plus 48 mois">Plus de 2 ans</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -287,6 +289,26 @@ const AddJobOffer = () => {
                             <FormControl>
                               <Textarea 
                                 placeholder="Décrivez les missions principales du poste..." 
+                                className="min-h-[120px]"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                          <FormField
+                        control={form.control}
+                        name="Description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <FileText className="h-4 w-4" />
+                             Description
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Décrivez le poste..." 
                                 className="min-h-[120px]"
                                 {...field} 
                               />
