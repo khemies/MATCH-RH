@@ -13,11 +13,11 @@ def normalize_offer_data(data, source="form"):
     if source == "form":
         # Normalisation des données du formulaire
         normalized = {
-            "Nom_poste": data.get("title", ""),
-            "Contrat": data.get("contract", ""),
-            "Description": data.get("description", ""),
-            "Entreprise": data.get("company", ""),
-            "Experience": data.get("experience", ""),
+            "Nom_poste": data.get("Nom_poste", ""),
+            "Contrat": data.get("Contrat", ""),
+            "Description": data.get("Description", ""),
+            "Entreprise": data.get("Entreprise", ""),
+            "Experience": data.get("Experience", ""),
             "missions": "",  # Champ présent dans le CSV mais pas dans le formulaire
             "profil": "",    # Champ présent dans le CSV mais pas dans le formulaire
             "stack_technique": "",  # Nouveau champ présent dans le CSV

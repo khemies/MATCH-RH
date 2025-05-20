@@ -50,7 +50,7 @@ type JobFormValues = {
   Experience: string;
   missions?: string;
   profil?: string;
-  Description : string ;
+  Description: string ;
   groupe_metier?: string;
   Lieu?: string;
 };
@@ -298,13 +298,13 @@ const AddJobOffer = () => {
                         )}
                       />
                           <FormField
-                        control={form.control}
-                        name="Description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <FileText className="h-4 w-4" />
-                             Description
+                           control={form.control}
+                           name="Description"
+                           render={({ field }) => (
+                             <FormItem>
+                               <FormLabel className="flex items-center gap-2">
+                               <FileText className="h-4 w-4" />
+                               Description
                             </FormLabel>
                             <FormControl>
                               <Textarea 
