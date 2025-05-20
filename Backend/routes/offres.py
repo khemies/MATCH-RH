@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, jsonify, current_app
 import csv
 import io
@@ -173,50 +172,18 @@ def get_matching_candidates(offre_id):
         if not ObjectId.is_valid(offre_id):
             return jsonify({"error": "ID d'offre invalide"}), 400
             
-        # Cette partie va simuler une recherche dans la base de données Matchrh
-        # En production, vous devez implémenter la vraie logique de recherche
-        # dans la base de données Matchrh où offre_id = candidat_id
+        # Rechercher dans la collection CandidatsMeilleursOffres pour les candidats correspondants à cette offre
+        candidates = current_app.mongo.db.CandidatsMeilleursOffres.find({"offre_id": offre_id})
         
-        # Pour démonstration, nous retournons des données simulées
-        # Dans une vraie implémentation, recherchez dans la collection CandidatsMeilleursOffres
-        mock_candidates = [
-            {
-                "_id": "c1",
-                "nom": "Dupont",
-                "prenom": "Jean",
-                "email": "jean.dupont@example.com",
-                "telephone": "06 12 34 56 78",
-                "experience": "5 ans",
-                "competences": ["Python", "SQL", "Data Analysis"],
-                "matching_score": 85,
-                "disponibilite": "Immédiate",
-                "mobilite": "France",
-                "cv_url": "https://example.com/cv/dupont.pdf"
-            },
-            {
-                "_id": "c2",
-                "nom": "Martin",
-                "prenom": "Sophie",
-                "email": "s.martin@example.com",
-                "telephone": "07 65 43 21 09",
-                "experience": "3 ans",
-                "competences": ["JavaScript", "React", "Node.js"],
-                "matching_score": 75,
-                "disponibilite": "1 mois",
-                "mobilite": "Remote",
-            },
-            {
-                "_id": "c3",
-                "nom": "Leroy",
-                "prenom": "Thomas",
-                "email": "thomas.l@example.com",
-                "experience": "2 ans",
-                "competences": ["Java", "Spring", "Hibernate"],
-                "matching_score": 60,
-            }
-        ]
-        
-        return jsonify(mock_candidates), 200
+        # Convertir les documents MongoDB en liste pour la sérialisation JSON
+        result = []
+        for candidate in candidates:
+            # Convertir ObjectId en string pour la sérialisation JSON
+            candidate["_id"] = str(candidate["_id"])
+            result.append(candidate)
+            
+        # Si aucun candidat trouvé, renvoyer une liste vide
+        return jsonify(result), 200
         
     except Exception as e:
         return jsonify({"error": f"Erreur lors de la récupération des candidats: {str(e)}"}), 500
