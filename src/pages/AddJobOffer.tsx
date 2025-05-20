@@ -44,15 +44,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImportJobsCSVModal from "@/components/jobs/ImportJobsCSVModal";
 
 type JobFormValues = {
-  title: string;
-  contract: string;
-  description: string;
-  company: string;
-  experience: string;
+  Nom_poste: string;
+  Contrat: string;
+  Entreprise: string;
+  Experience: string;
   missions?: string;
   profil?: string;
   groupe_metier?: string;
-  lieu?: string;
+  Lieu?: string;
 };
 
 const AddJobOffer = () => {
@@ -60,15 +59,14 @@ const AddJobOffer = () => {
 
   const form = useForm<JobFormValues>({
     defaultValues: {
-      title: "",
-      contract: "",
-      description: "",
-      company: "",
-      experience: "",
+      Nom_poste: "",
+      Contrat: "",
+      Entreprise: "",
+      Experience: "",
       missions: "",
       profil: "",
       groupe_metier: "",
-      lieu: ""
+      Lieu: ""
     },
   });
 
@@ -154,7 +152,7 @@ const AddJobOffer = () => {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                       <FormField
                         control={form.control}
-                        name="title"
+                        name="Nom_poste"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
@@ -171,7 +169,7 @@ const AddJobOffer = () => {
 
                       <FormField
                         control={form.control}
-                        name="contract"
+                        name="Contrat"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
@@ -200,7 +198,7 @@ const AddJobOffer = () => {
 
                       <FormField
                         control={form.control}
-                        name="company"
+                        name="Entreprise"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
@@ -217,7 +215,7 @@ const AddJobOffer = () => {
 
                       <FormField
                         control={form.control}
-                        name="lieu"
+                        name="Lieu"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
@@ -234,7 +232,7 @@ const AddJobOffer = () => {
 
                       <FormField
                         control={form.control}
-                        name="experience"
+                        name="Experience"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
@@ -319,29 +317,7 @@ const AddJobOffer = () => {
                         )}
                       />
 
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <FileText className="h-4 w-4" />
-                              Description du poste
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Décrivez les responsabilités, les exigences et les avantages du poste..." 
-                                className="min-h-[200px]"
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Soyez précis pour attirer les meilleurs candidats.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      
 
                       <CardFooter className="flex justify-end pt-6 px-0">
                         <Button type="submit" className="bg-career-blue hover:bg-career-darkblue">
