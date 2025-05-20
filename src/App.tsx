@@ -1,6 +1,5 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import 'sonner/styles.css'; // Import Sonner CSS
 import { Toaster } from 'sonner';
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";

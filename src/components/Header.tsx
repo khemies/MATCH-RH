@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -80,13 +81,15 @@ const Header = () => {
 
   // Liens de navigation selon le rôle (candidat ou recruteur)
   const getNavLinks = () => {
+    // Get userData from localStorage
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
     const role = userData?.role;
 
     if (role === "recruiter") {
       return [
         { href: "/dashboard", label: "Tableau de bord" },
         { href: "/add-job-offer", label: "Ajouter une offre" },
-        { href: "/all-profiles", label: "Tous les profils" }, // Nouveau lien
+        { href: "/all-profiles", label: "Tous les profils" }, 
         { href: "/messaging", label: "Messagerie" },
         { href: "/calendar", label: "Calendrier" },
       ];
