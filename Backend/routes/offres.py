@@ -172,8 +172,9 @@ def get_matching_candidates(offre_id):
         if not ObjectId.is_valid(offre_id):
             return jsonify({"error": "ID d'offre invalide"}), 400
             
-        # Rechercher dans la collection CandidatsMeilleursOffres pour les candidats correspondants à cette offre
-        candidates = current_app.mongo.db.CandidatsMeilleursOffres.find({"offre_id": offre_id})
+        # Rechercher dans la collection CandidatsMeilleursOffres pour les candidats 
+        # correspondants à cette offre où candidat_id = offre_id
+        candidates = current_app.mongo.db.CandidatsMeilleursOffres.find({"candidat_id": offre_id})
         
         # Convertir les documents MongoDB en liste pour la sérialisation JSON
         result = []
@@ -182,8 +183,12 @@ def get_matching_candidates(offre_id):
             candidate["_id"] = str(candidate["_id"])
             result.append(candidate)
             
-        # Si aucun candidat trouvé, renvoyer une liste vide
+        # Logging pour débogage
+        print(f"Offre ID recherché: {offre_id}")
+        print(f"Nombre de candidats trouvés: {len(result)}")
+            
         return jsonify(result), 200
         
     except Exception as e:
+        print(f"Erreur lors de la récupération des candidats: {str(e)}")
         return jsonify({"error": f"Erreur lors de la récupération des candidats: {str(e)}"}), 500

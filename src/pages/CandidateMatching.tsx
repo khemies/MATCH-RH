@@ -38,7 +38,7 @@ interface Offer {
 // Interface pour le candidat
 interface Candidate {
   _id: string;
-  offre_id?: string;
+  candidat_id?: string;  // ID de l'offre correspondante
   nom?: string;
   prenom?: string;
   email?: string;
@@ -74,11 +74,14 @@ const CandidateMatching = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
+        console.log("ID de l'offre:", offerId);
+        
         // Récupération des détails de l'offre
         const offerResponse = await axios.get(`http://localhost:5000/api/offres/${offerId}`);
         setOffer(offerResponse.data);
+        console.log("Détails de l'offre:", offerResponse.data);
         
-        // Récupération des candidats correspondants
+        // Récupération des candidats correspondants où candidat_id = offerId
         const candidatesResponse = await axios.get(`http://localhost:5000/api/offres/candidates/matching/${offerId}`);
         console.log("Candidats reçus:", candidatesResponse.data);
         setCandidates(candidatesResponse.data || []);
