@@ -7,6 +7,41 @@ from bson.objectid import ObjectId
 
 profile_blueprint = Blueprint("profile", __name__)
 
+# Fonction pour normaliser les données du profil
+def normalize_profile_data(data, source="form"):
+    normalized = {}
+    
+    if source == "form":
+        # Normalisation des données du formulaire
+        normalized = {
+            "profile": data.get("profile", ""),
+            "location": data.get("location", ""),
+            "availability": data.get("availability", "immediate"),
+            "strengths": data.get("strengths", []),
+            "skills": data.get("skills", []) if isinstance(data.get("skills"), list) else [s.strip() for s in data.get("skills", "").split(",") if s.strip()],
+            "experience": "",  # Champ présent dans le CSV mais pas dans le formulaire
+            "contract_type": "",  # Champ présent dans le CSV mais pas dans le formulaire
+            "job_category": "",  # Champ présent dans le CSV mais pas dans le formulaire
+            "user_id": data.get("user_id", ""),
+            "source": "formulaire"
+        }
+    elif source == "csv":
+        # Normalisation des données du CSV
+        normalized = {
+            "profile": data.get("Profil", ""),
+            "location": data.get("Lieu_de_recherche", ""),
+            "availability": data.get("Disponibilité", "immediate"),
+            "strengths": data.get("Points_forts", "").split(",") if isinstance(data.get("Points_forts"), str) else data.get("Points_forts", []),
+            "skills": data.get("Compétence", "").split(",") if isinstance(data.get("Compétence"), str) else data.get("Compétence", []),
+            "experience": data.get("Expérience", ""),
+            "contract_type": data.get("Contrat", ""),
+            "job_category": data.get("Metier_regroupe", ""),
+            "user_id": data.get("user_id", ""),
+            "source": "csv"
+        }
+    
+    return normalized
+
 @profile_blueprint.route("/upload_cv", methods=["PUT"])
 def upload_cv():
     # Récupère les données du formulaire
@@ -19,22 +54,8 @@ def upload_cv():
     except Exception as e:
         return jsonify({"message": "Erreur de parsing JSON", "error": str(e)}), 400
 
-    # Traite les compétences comme une chaîne de texte et la convertit en liste
-    skills = data.get("skills", "")
-    if isinstance(skills, str):
-        # Divise la chaîne par virgules et nettoie les espaces
-        skills_list = [skill.strip() for skill in skills.split(",") if skill.strip()]
-    else:
-        skills_list = skills
-
-    profile_data = {
-        "location": data.get("location", ""),
-        "availability": data.get("availability", "immediate"),
-        "profile": data.get("profile", ""),
-        "strengths": data.get("strengths", []),
-        "skills": skills_list,
-        "user_id": data.get("user_id", "")  # Ajouter l'ID de l'utilisateur
-    }
+    # Normalisation des données du profil
+    profile_data = normalize_profile_data(data, "form")
 
     # Vérifie si un CV est présent
     if "cv" in request.files:
@@ -77,6 +98,18 @@ def get_profile():
     else:
         return jsonify({"message": "Profil non trouvé"}), 404
 
+@profile_blueprint.route("/all", methods=["GET"])
+@jwt_required()
+def get_all_profiles():
+    # Récupérer tous les profils
+    profiles = list(current_app.mongo.db.profiles.find({}))
+    
+    # Convertir ObjectId en string pour la sérialisation JSON
+    for profile in profiles:
+        profile["_id"] = str(profile["_id"])
+    
+    return jsonify(profiles), 200
+
 @profile_blueprint.route("/check", methods=["GET"])
 @jwt_required()
 def check_profile():
@@ -118,3 +151,47 @@ def delete_profile():
         return jsonify({"message": "Profil supprimé avec succès"}), 200
     else:
         return jsonify({"message": "Erreur lors de la suppression du profil"}), 500
+
+# Route pour importer les profils depuis un fichier CSV
+@profile_blueprint.route("/import_csv", methods=["POST"])
+@jwt_required()
+def import_csv_profiles():
+    if 'file' not in request.files:
+        return jsonify({"message": "Aucun fichier n'a été téléchargé"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"message": "Aucun fichier sélectionné"}), 400
+    
+    if not file.filename.endswith('.csv'):
+        return jsonify({"message": "Le fichier doit être au format CSV"}), 400
+    
+    # Traiter le fichier CSV
+    try:
+        import csv
+        import io
+        
+        # Lire le fichier CSV
+        csv_content = io.StringIO(file.stream.read().decode('utf-8'))
+        csv_reader = csv.DictReader(csv_content)
+        
+        imported_count = 0
+        for row in csv_reader:
+            # Normaliser les données du CSV
+            profile_data = normalize_profile_data(row, "csv")
+            
+            # Ajouter l'ID utilisateur si nécessaire (par exemple, générer un ID unique)
+            if not profile_data.get("user_id"):
+                profile_data["user_id"] = str(ObjectId())
+            
+            # Insérer le profil dans la base de données
+            current_app.mongo.db.profiles.insert_one(profile_data)
+            imported_count += 1
+        
+        return jsonify({
+            "message": f"{imported_count} profils ont été importés avec succès",
+            "count": imported_count
+        }), 201
+        
+    except Exception as e:
+        return jsonify({"message": "Erreur lors de l'importation du fichier CSV", "error": str(e)}), 500

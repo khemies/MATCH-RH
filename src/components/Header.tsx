@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -79,6 +78,29 @@ const Header = () => {
     }
   };
 
+  // Liens de navigation selon le rôle (candidat ou recruteur)
+  const getNavLinks = () => {
+    const role = userData?.role;
+
+    if (role === "recruiter") {
+      return [
+        { href: "/dashboard", label: "Tableau de bord" },
+        { href: "/add-job-offer", label: "Ajouter une offre" },
+        { href: "/all-profiles", label: "Tous les profils" }, // Nouveau lien
+        { href: "/messaging", label: "Messagerie" },
+        { href: "/calendar", label: "Calendrier" },
+      ];
+    } else if (role === "candidate") {
+      return [
+        { href: "/dashboard", label: "Tableau de bord" },
+        { href: "/edit-profile", label: "Mon profil" },
+        { href: "/messaging", label: "Messagerie" },
+        { href: "/calendar", label: "Calendrier" },
+      ];
+    }
+    return [];
+  };
+
   return (
     <header className="w-full py-4 px-6 lg:px-10 bg-white shadow-sm fixed top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -87,16 +109,11 @@ const Header = () => {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/" className="text-gray-600 hover:text-career-blue transition-colors">Accueil</Link>
-          {isLoggedIn && (
-            <Link to="/dashboard" className="text-gray-600 hover:text-career-blue transition-colors">Tableau de bord</Link>
-          )}
-          {isLoggedIn && (
-            <Link to="/messaging" className="text-gray-600 hover:text-career-blue transition-colors">Messages</Link>
-          )}
-          {isLoggedIn && (
-            <Link to="/calendar" className="text-gray-600 hover:text-career-blue transition-colors">Calendrier</Link>
-          )}
+          {getNavLinks().map((link, index) => (
+            <Link key={index} to={link.href} className="text-gray-600 hover:text-career-blue transition-colors">
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-3">
