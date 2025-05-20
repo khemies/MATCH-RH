@@ -13,30 +13,32 @@ def normalize_offer_data(data, source="form"):
     if source == "form":
         # Normalisation des données du formulaire
         normalized = {
-            "titre": data.get("title", ""),
-            "contrat": data.get("contract", ""),
-            "description": data.get("description", ""),
-            "entreprise": data.get("company", ""),
-            "experience": data.get("experience", ""),
+            "Nom_poste": data.get("title", ""),
+            "Contrat": data.get("contract", ""),
+            "Description": data.get("description", ""),
+            "Entreprise": data.get("company", ""),
+            "Experience": data.get("experience", ""),
             "missions": "",  # Champ présent dans le CSV mais pas dans le formulaire
             "profil": "",    # Champ présent dans le CSV mais pas dans le formulaire
+            "stack_technique": "",  # Nouveau champ présent dans le CSV
             "groupe_metier": "", # Champ présent dans le CSV mais pas dans le formulaire
-            "lieu": "",      # Champ présent dans le CSV mais pas dans le formulaire
+            "Lieu": "",      # Champ présent dans le CSV mais pas dans le formulaire
             "recruteur_id": data.get("recruiterId", ""),
             "source": "formulaire"
         }
     elif source == "csv":
-        # Normalisation des données du CSV
+        # Normalisation des données du CSV - Utiliser directement les noms des colonnes du CSV
         normalized = {
-            "titre": data.get("Nom_poste", ""),
-            "contrat": data.get("Contrat", ""),
-            "description": data.get("Description", ""),
-            "entreprise": data.get("Entreprise", ""),
-            "experience": data.get("Experience", ""),
+            "Nom_poste": data.get("Nom_poste", ""),
+            "Contrat": data.get("Contrat", ""),
+            "Description": data.get("Description", ""),
+            "Entreprise": data.get("Entreprise", ""),
+            "Experience": data.get("Experience", ""),
             "missions": data.get("missions", ""),
             "profil": data.get("profil", ""),
+            "stack_technique": data.get("stack_technique", ""),
             "groupe_metier": data.get("groupe_metier", ""),
-            "lieu": data.get("Lieu", ""),
+            "Lieu": data.get("Lieu", ""),
             "recruteur_id": data.get("recruteur_id", ""),
             "source": "csv"
         }
@@ -52,7 +54,7 @@ def ajouter_offre():
     offre = normalize_offer_data(data, "form")
 
     # Vérification des champs requis
-    if not offre["titre"] or not offre["entreprise"] or not offre["description"]:
+    if not offre["Nom_poste"] or not offre["Entreprise"] or not offre["Description"]:
         return jsonify({"error": "Champs requis manquants"}), 400
 
     try:

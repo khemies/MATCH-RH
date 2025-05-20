@@ -11,22 +11,24 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Briefcase, Building, Clock, MapPin, Users, FileText } from "lucide-react";
+import { ChevronDown, ChevronUp, Briefcase, Building, Clock, MapPin, Users, FileText, Code } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
+// Mise à jour de l'interface pour correspondre aux noms des champs dans la base de données
 interface Offer {
-  titre: string;
-  contrat: string;
-  description: string;
-  entreprise: string;
-  experience: string;
+  Nom_poste: string;
+  Contrat: string;
+  Description: string;
+  Entreprise: string;
+  Experience: string;
   recruteur_id: string;
   missions?: string;
   profil?: string;
+  stack_technique?: string;
   groupe_metier?: string;
-  lieu?: string;
+  Lieu?: string;
   source?: string;
 }
 
@@ -86,6 +88,7 @@ const RecruiterContent = () => {
   const formatExperience = (experience: string) => {
     switch(experience) {
       case "debutant": return "Débutant accepté";
+      case "Débutant accepté": return "Débutant accepté";
       case "1-2": return "1 à 2 ans";
       case "3-5": return "3 à 5 ans";
       case "5-10": return "5 à 10 ans";
@@ -99,6 +102,8 @@ const RecruiterContent = () => {
     switch(contrat) {
       case "cdi": return "CDI";
       case "cdd": return "CDD";
+      case "CDI": return "CDI";
+      case "CDD": return "CDD";
       case "interim": return "Intérim";
       case "stage": return "Stage";
       case "alternance": return "Alternance";
@@ -149,22 +154,22 @@ const RecruiterContent = () => {
                   <div className="flex items-center space-x-2">
                     <Briefcase className="h-5 w-5 text-career-blue" />
                     <div>
-                      <CardTitle className="text-lg">{offer.titre}</CardTitle>
+                      <CardTitle className="text-lg">{offer.Nom_poste}</CardTitle>
                       <CardDescription className="flex items-center space-x-2 flex-wrap">
                         <Building className="h-4 w-4" />
-                        <span>{offer.entreprise}</span>
-                        {offer.contrat && (
+                        <span>{offer.Entreprise}</span>
+                        {offer.Contrat && (
                           <>
                             <span>•</span>
-                            <Badge variant="outline">{formatContrat(offer.contrat)}</Badge>
+                            <Badge variant="outline">{formatContrat(offer.Contrat)}</Badge>
                           </>
                         )}
-                        {offer.lieu && (
+                        {offer.Lieu && (
                           <>
                             <span>•</span>
                             <span className="flex items-center">
                               <MapPin className="h-3 w-3 mr-1" />
-                              {offer.lieu}
+                              {offer.Lieu}
                             </span>
                           </>
                         )}
@@ -193,10 +198,10 @@ const RecruiterContent = () => {
                 <>
                   <CardContent className="pb-3 pt-1">
                     <div className="space-y-3">
-                      {offer.description && (
+                      {offer.Description && (
                         <div>
                           <h4 className="font-medium text-sm text-gray-500 mb-1">Description</h4>
-                          <p className="text-sm whitespace-pre-wrap">{offer.description}</p>
+                          <p className="text-sm whitespace-pre-wrap">{offer.Description}</p>
                         </div>
                       )}
                       
@@ -213,13 +218,23 @@ const RecruiterContent = () => {
                           <p className="text-sm whitespace-pre-wrap">{offer.profil}</p>
                         </div>
                       )}
+
+                      {offer.stack_technique && (
+                        <div>
+                          <h4 className="font-medium text-sm text-gray-500 mb-1">Stack technique</h4>
+                          <div className="flex items-center">
+                            <Code className="h-4 w-4 mr-1 text-gray-500" />
+                            <p className="text-sm">{offer.stack_technique}</p>
+                          </div>
+                        </div>
+                      )}
                       
                       <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4">
-                        {offer.experience && (
+                        {offer.Experience && (
                           <div className="flex items-center">
                             <Clock className="h-4 w-4 mr-1 text-gray-500" />
                             <span className="text-sm">
-                              Expérience: {formatExperience(offer.experience)}
+                              Expérience: {formatExperience(offer.Experience)}
                             </span>
                           </div>
                         )}
