@@ -95,10 +95,26 @@ def check_profile():
 def delete_profile():
     user_id = get_jwt_identity()
     
-    # Trouver et supprimer le profil
+    # Récupérer le profil avant de le supprimer pour avoir des informations
+    profile = current_app.mongo.db.profiles.find_one({"user_id": user_id})
+    
+    if not profile:
+        return jsonify({"message": "Profil non trouvé"}), 404
+    
+    # Supprimer le fichier CV associé si existant
+    if "cv_filename" in profile and profile["cv_filename"]:
+        try:
+            cv_path = os.path.join("uploads", profile["cv_filename"])
+            if os.path.exists(cv_path):
+                os.remove(cv_path)
+        except Exception as e:
+            # Log l'erreur mais continuez la suppression du profil
+            print(f"Erreur lors de la suppression du fichier CV: {str(e)}")
+    
+    # Supprimer le profil de la base de données
     result = current_app.mongo.db.profiles.delete_one({"user_id": user_id})
     
     if result.deleted_count > 0:
         return jsonify({"message": "Profil supprimé avec succès"}), 200
     else:
-        return jsonify({"message": "Profil non trouvé"}), 404
+        return jsonify({"message": "Erreur lors de la suppression du profil"}), 500

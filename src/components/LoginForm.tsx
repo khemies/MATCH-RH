@@ -55,7 +55,7 @@ const LoginForm = ({ isRegister = false }) => {
       // Stockage des données utilisateur dans le localStorage
       if (!isRegister) {
         const userData = {
-          id: data.user_id,
+          id: data.user_id,  // Stockage de l'ID utilisateur
           role: data.role,
           token: data.token,
           pseudo: data.pseudo

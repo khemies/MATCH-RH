@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
@@ -91,9 +92,8 @@ const EditProfile = () => {
           description: `Le fichier ${file.name} a été téléchargé avec succès.`,
         });
       } else {
-        toast("Format de fichier non supporté", {
+        toast.error("Format de fichier non supporté", {
           description: "Veuillez télécharger un fichier PDF ou DOCX.",
-          variant: "destructive",
         });
       }
     }

@@ -8,8 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger 
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -60,14 +59,20 @@ const Header = () => {
         return;
       }
       
-      await axios.delete("http://localhost:5000/api/profiles/delete", {
+      const response = await axios.delete("http://localhost:5000/api/profiles/delete", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       
-      toast.success("Votre profil a été supprimé avec succès");
-      setConfirmDelete(false);
+      if (response.status === 200) {
+        toast.success("Votre profil a été supprimé avec succès");
+        setConfirmDelete(false);
+        // Rediriger vers la page de création de profil après la suppression
+        navigate("/create-profile");
+      } else {
+        toast.error("Une erreur est survenue lors de la suppression du profil");
+      }
     } catch (error) {
       console.error("Erreur lors de la suppression du profil:", error);
       toast.error("Une erreur est survenue lors de la suppression du profil");
