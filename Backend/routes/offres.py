@@ -11,19 +11,19 @@ def normalize_offer_data(data, source="form"):
     normalized = {}
     
     if source == "form":
-        # Normalisation des données du formulaire
+        # Normalisation des données du formulaire - Utiliser directement les noms de champs du formulaire
         normalized = {
             "Nom_poste": data.get("Nom_poste", ""),
             "Contrat": data.get("Contrat", ""),
             "Description": data.get("Description", ""),
             "Entreprise": data.get("Entreprise", ""),
             "Experience": data.get("Experience", ""),
-            "missions": "",  # Champ présent dans le CSV mais pas dans le formulaire
-            "profil": "",    # Champ présent dans le CSV mais pas dans le formulaire
-            "stack_technique": "",  # Nouveau champ présent dans le CSV
-            "groupe_metier": "", # Champ présent dans le CSV mais pas dans le formulaire
-            "Lieu": "",      # Champ présent dans le CSV mais pas dans le formulaire
-            "recruteur_id": data.get("recruiterId", ""),
+            "missions": data.get("missions", ""),
+            "profil": data.get("profil", ""),
+            "stack_technique": data.get("stack_technique", ""),
+            "groupe_metier": data.get("groupe_metier", ""),
+            "Lieu": data.get("Lieu", ""),
+            "recruteur_id": data.get("recruteur_id", ""),
             "source": "formulaire"
         }
     elif source == "csv":
