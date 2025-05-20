@@ -59,17 +59,48 @@ def ajouter_offre():
 
     try:
         # Insertion dans la base de données MongoDB
-        current_app.mongo.db.offres.insert_one(offre)
-        return jsonify({"message": "Offre ajoutée avec succès"}), 201
+        inserted = current_app.mongo.db.offres.insert_one(offre)
+        return jsonify({
+            "message": "Offre ajoutée avec succès", 
+            "id": str(inserted.inserted_id)
+        }), 201
     except Exception as e:
         return jsonify({"error": f"Erreur lors de l'ajout: {str(e)}"}), 500
 
 @offre_blueprint.route("/list", methods=["GET"])
 def lister_offres():
     try:
-        # Récupération des offres depuis la base de données
-        offres = list(current_app.mongo.db.offres.find({}, {"_id": 0}))
+        limit = request.args.get('limit', default=100, type=int)
+        # Récupération des offres depuis la base de données avec limite
+        cursor = current_app.mongo.db.offres.find({}).limit(limit)
+        
+        # Conversion des ObjectId en strings pour la sérialisation JSON
+        offres = []
+        for offre in cursor:
+            offre["_id"] = str(offre["_id"])
+            offres.append(offre)
+            
         return jsonify(offres), 200
+    except Exception as e:
+        return jsonify({"error": f"Erreur lors de la récupération: {str(e)}"}), 500
+
+# Route pour récupérer une offre par son ID
+@offre_blueprint.route("/<offre_id>", methods=["GET"])
+def get_offre_by_id(offre_id):
+    try:
+        # Vérifier que l'ID est valide
+        if not ObjectId.is_valid(offre_id):
+            return jsonify({"error": "ID d'offre invalide"}), 400
+            
+        # Récupérer l'offre par son ID
+        offre = current_app.mongo.db.offres.find_one({"_id": ObjectId(offre_id)})
+        
+        if not offre:
+            return jsonify({"error": "Offre non trouvée"}), 404
+            
+        # Convertir ObjectId en string pour la sérialisation JSON
+        offre["_id"] = str(offre["_id"])
+        return jsonify(offre), 200
     except Exception as e:
         return jsonify({"error": f"Erreur lors de la récupération: {str(e)}"}), 500
 
@@ -78,7 +109,14 @@ def lister_offres():
 def lister_offres_recruteur(recruteur_id):
     try:
         # Récupération des offres du recruteur spécifié
-        offres = list(current_app.mongo.db.offres.find({"recruteur_id": recruteur_id}, {"_id": 0}))
+        cursor = current_app.mongo.db.offres.find({"recruteur_id": recruteur_id})
+        
+        # Conversion des ObjectId en strings pour la sérialisation JSON
+        offres = []
+        for offre in cursor:
+            offre["_id"] = str(offre["_id"])
+            offres.append(offre)
+            
         return jsonify(offres), 200
     except Exception as e:
         return jsonify({"error": f"Erreur lors de la récupération: {str(e)}"}), 500
@@ -126,3 +164,59 @@ def importer_offres_csv():
         
     except Exception as e:
         return jsonify({"message": "Erreur lors de l'importation du fichier CSV", "error": str(e)}), 500
+
+# Route pour récupérer les candidats correspondants à une offre
+@offre_blueprint.route("/candidates/matching/<offre_id>", methods=["GET"])
+def get_matching_candidates(offre_id):
+    try:
+        # Vérifier que l'ID est valide
+        if not ObjectId.is_valid(offre_id):
+            return jsonify({"error": "ID d'offre invalide"}), 400
+            
+        # Cette partie va simuler une recherche dans la base de données Matchrh
+        # En production, vous devez implémenter la vraie logique de recherche
+        # dans la base de données Matchrh où offre_id = candidat_id
+        
+        # Pour démonstration, nous retournons des données simulées
+        # Dans une vraie implémentation, recherchez dans la collection CandidatsMeilleursOffres
+        mock_candidates = [
+            {
+                "_id": "c1",
+                "nom": "Dupont",
+                "prenom": "Jean",
+                "email": "jean.dupont@example.com",
+                "telephone": "06 12 34 56 78",
+                "experience": "5 ans",
+                "competences": ["Python", "SQL", "Data Analysis"],
+                "matching_score": 85,
+                "disponibilite": "Immédiate",
+                "mobilite": "France",
+                "cv_url": "https://example.com/cv/dupont.pdf"
+            },
+            {
+                "_id": "c2",
+                "nom": "Martin",
+                "prenom": "Sophie",
+                "email": "s.martin@example.com",
+                "telephone": "07 65 43 21 09",
+                "experience": "3 ans",
+                "competences": ["JavaScript", "React", "Node.js"],
+                "matching_score": 75,
+                "disponibilite": "1 mois",
+                "mobilite": "Remote",
+            },
+            {
+                "_id": "c3",
+                "nom": "Leroy",
+                "prenom": "Thomas",
+                "email": "thomas.l@example.com",
+                "experience": "2 ans",
+                "competences": ["Java", "Spring", "Hibernate"],
+                "matching_score": 60,
+            }
+        ]
+        
+        return jsonify(mock_candidates), 200
+        
+    except Exception as e:
+        return jsonify({"error": f"Erreur lors de la récupération des candidats: {str(e)}"}), 500
