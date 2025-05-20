@@ -1,33 +1,59 @@
 
 from flask import Blueprint, request, jsonify, current_app
+import csv
+import io
+from bson.objectid import ObjectId
 
 offre_blueprint = Blueprint("offres", __name__)
+
+# Fonction pour normaliser les données d'offre
+def normalize_offer_data(data, source="form"):
+    normalized = {}
+    
+    if source == "form":
+        # Normalisation des données du formulaire
+        normalized = {
+            "titre": data.get("title", ""),
+            "contrat": data.get("contract", ""),
+            "description": data.get("description", ""),
+            "entreprise": data.get("company", ""),
+            "experience": data.get("experience", ""),
+            "missions": "",  # Champ présent dans le CSV mais pas dans le formulaire
+            "profil": "",    # Champ présent dans le CSV mais pas dans le formulaire
+            "groupe_metier": "", # Champ présent dans le CSV mais pas dans le formulaire
+            "lieu": "",      # Champ présent dans le CSV mais pas dans le formulaire
+            "recruteur_id": data.get("recruiterId", ""),
+            "source": "formulaire"
+        }
+    elif source == "csv":
+        # Normalisation des données du CSV
+        normalized = {
+            "titre": data.get("Nom_poste", ""),
+            "contrat": data.get("Contrat", ""),
+            "description": data.get("Description", ""),
+            "entreprise": data.get("Entreprise", ""),
+            "experience": data.get("Experience", ""),
+            "missions": data.get("missions", ""),
+            "profil": data.get("profil", ""),
+            "groupe_metier": data.get("groupe_metier", ""),
+            "lieu": data.get("Lieu", ""),
+            "recruteur_id": data.get("recruteur_id", ""),
+            "source": "csv"
+        }
+    
+    return normalized
 
 @offre_blueprint.route("/add", methods=["POST"])
 def ajouter_offre():
     # Récupération des données envoyées dans la requête
     data = request.get_json()
     
-    titre = data.get("title")
-    contrat = data.get("contract")
-    description = data.get("description")
-    entreprise = data.get("company")
-    experience = data.get("experience")
-    recruteur_id = data.get("recruiterId")  # Ajout du champ recruiterId
+    # Normalisation des données du formulaire
+    offre = normalize_offer_data(data, "form")
 
     # Vérification des champs requis
-    if not titre or not entreprise or not description or not recruteur_id:
+    if not offre["titre"] or not offre["entreprise"] or not offre["description"]:
         return jsonify({"error": "Champs requis manquants"}), 400
-
-    # Création de l'offre à insérer dans la base de données
-    offre = {
-        "titre": titre,
-        "contrat": contrat,
-        "description": description,
-        "entreprise": entreprise,
-        "experience": experience,
-        "recruteur_id": recruteur_id  # Stockage de l'ID du recruteur
-    }
 
     try:
         # Insertion dans la base de données MongoDB
@@ -54,3 +80,47 @@ def lister_offres_recruteur(recruteur_id):
         return jsonify(offres), 200
     except Exception as e:
         return jsonify({"error": f"Erreur lors de la récupération: {str(e)}"}), 500
+
+# Route pour importer des offres depuis un fichier CSV
+@offre_blueprint.route("/import_csv", methods=["POST"])
+def importer_offres_csv():
+    if 'file' not in request.files:
+        return jsonify({"message": "Aucun fichier n'a été téléchargé"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"message": "Aucun fichier sélectionné"}), 400
+    
+    if not file.filename.endswith('.csv'):
+        return jsonify({"message": "Le fichier doit être au format CSV"}), 400
+    
+    # Récupération de l'ID du recruteur
+    recruteur_id = request.form.get("recruiterId")
+    
+    if not recruteur_id:
+        return jsonify({"message": "ID du recruteur manquant"}), 400
+    
+    try:
+        # Lire le fichier CSV
+        csv_content = io.StringIO(file.stream.read().decode('utf-8'))
+        csv_reader = csv.DictReader(csv_content)
+        
+        imported_count = 0
+        for row in csv_reader:
+            # Ajouter l'ID du recruteur
+            row["recruteur_id"] = recruteur_id
+            
+            # Normaliser les données du CSV
+            offre_data = normalize_offer_data(row, "csv")
+            
+            # Insérer l'offre dans la base de données
+            current_app.mongo.db.offres.insert_one(offre_data)
+            imported_count += 1
+        
+        return jsonify({
+            "message": f"{imported_count} offres ont été importées avec succès",
+            "count": imported_count
+        }), 201
+        
+    except Exception as e:
+        return jsonify({"message": "Erreur lors de l'importation du fichier CSV", "error": str(e)}), 500

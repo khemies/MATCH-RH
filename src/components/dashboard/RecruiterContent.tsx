@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, Briefcase, Building, Clock } from "lucide-react";
+import { ChevronDown, ChevronUp, Briefcase, Building, Clock, MapPin, Users, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -23,6 +23,11 @@ interface Offer {
   entreprise: string;
   experience: string;
   recruteur_id: string;
+  missions?: string;
+  profil?: string;
+  groupe_metier?: string;
+  lieu?: string;
+  source?: string;
 }
 
 const RecruiterContent = () => {
@@ -143,7 +148,7 @@ const RecruiterContent = () => {
                     <Briefcase className="h-5 w-5 text-career-blue" />
                     <div>
                       <CardTitle className="text-lg">{offer.titre}</CardTitle>
-                      <CardDescription className="flex items-center space-x-2">
+                      <CardDescription className="flex items-center space-x-2 flex-wrap">
                         <Building className="h-4 w-4" />
                         <span>{offer.entreprise}</span>
                         {offer.contrat && (
@@ -152,10 +157,24 @@ const RecruiterContent = () => {
                             <Badge variant="outline">{formatContrat(offer.contrat)}</Badge>
                           </>
                         )}
+                        {offer.lieu && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              {offer.lieu}
+                            </span>
+                          </>
+                        )}
                       </CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center">
+                    {offer.source && (
+                      <Badge className="mr-2 bg-blue-100 text-blue-800 hover:bg-blue-100">
+                        {offer.source === "formulaire" ? "Formulaire" : "CSV"}
+                      </Badge>
+                    )}
                     <Badge className="mr-3 bg-green-100 text-green-800 hover:bg-green-100">
                       Active
                     </Badge>
@@ -172,17 +191,42 @@ const RecruiterContent = () => {
                 <>
                   <CardContent className="pb-3 pt-1">
                     <div className="space-y-3">
-                      <div>
-                        <h4 className="font-medium text-sm text-gray-500 mb-1">Description</h4>
-                        <p className="text-sm whitespace-pre-wrap">{offer.description}</p>
-                      </div>
+                      {offer.description && (
+                        <div>
+                          <h4 className="font-medium text-sm text-gray-500 mb-1">Description</h4>
+                          <p className="text-sm whitespace-pre-wrap">{offer.description}</p>
+                        </div>
+                      )}
                       
-                      <div className="flex flex-wrap gap-x-6 gap-y-2">
+                      {offer.missions && (
+                        <div>
+                          <h4 className="font-medium text-sm text-gray-500 mb-1">Missions</h4>
+                          <p className="text-sm whitespace-pre-wrap">{offer.missions}</p>
+                        </div>
+                      )}
+                      
+                      {offer.profil && (
+                        <div>
+                          <h4 className="font-medium text-sm text-gray-500 mb-1">Profil recherché</h4>
+                          <p className="text-sm whitespace-pre-wrap">{offer.profil}</p>
+                        </div>
+                      )}
+                      
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4">
                         {offer.experience && (
                           <div className="flex items-center">
                             <Clock className="h-4 w-4 mr-1 text-gray-500" />
                             <span className="text-sm">
                               Expérience: {formatExperience(offer.experience)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {offer.groupe_metier && (
+                          <div className="flex items-center">
+                            <Users className="h-4 w-4 mr-1 text-gray-500" />
+                            <span className="text-sm">
+                              Groupe métier: {offer.groupe_metier}
                             </span>
                           </div>
                         )}
@@ -215,7 +259,16 @@ const RecruiterContent = () => {
           <TabsTrigger value="allOffers">Autres offres sur la plateforme</TabsTrigger>
         </TabsList>
         <TabsContent value="myOffers" className="space-y-4">
-          <h2 className="text-2xl font-semibold mb-4">Mes offres d'emploi</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold">Mes offres d'emploi</h2>
+            <Button 
+              onClick={() => window.location.href = "/add-job-offer"}
+              className="bg-career-blue hover:bg-career-darkblue"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Ajouter une offre
+            </Button>
+          </div>
           {renderOffersList(myOffers, isLoadingMyOffers, "Aucune offre publiée", "myOffers")}
         </TabsContent>
         <TabsContent value="allOffers" className="space-y-4">

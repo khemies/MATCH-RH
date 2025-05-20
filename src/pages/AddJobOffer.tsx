@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Briefcase, Building, Calendar, FileText } from "lucide-react";
+import { 
+  Briefcase, 
+  Building, 
+  Calendar, 
+  FileText, 
+  MapPin, 
+  Users, 
+  Upload, 
+  File
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ImportJobsCSVModal from "@/components/jobs/ImportJobsCSVModal";
 
 type JobFormValues = {
   title: string;
@@ -38,9 +49,15 @@ type JobFormValues = {
   description: string;
   company: string;
   experience: string;
+  missions?: string;
+  profil?: string;
+  groupe_metier?: string;
+  lieu?: string;
 };
 
 const AddJobOffer = () => {
+  const [showImportModal, setShowImportModal] = useState(false);
+
   const form = useForm<JobFormValues>({
     defaultValues: {
       title: "",
@@ -48,6 +65,10 @@ const AddJobOffer = () => {
       description: "",
       company: "",
       experience: "",
+      missions: "",
+      profil: "",
+      groupe_metier: "",
+      lieu: ""
     },
   });
 
@@ -92,149 +113,280 @@ const AddJobOffer = () => {
     }
   };
 
+  const handleImportSuccess = () => {
+    toast.success("Offres importées avec succès");
+    setShowImportModal(false);
+  };
+
   return (
     <>
       <Header />
       <div className="min-h-screen bg-career-lightgray pt-24 px-6 pb-12">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Publier une nouvelle offre d'emploi</h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold">Publier une nouvelle offre d'emploi</h1>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Importer CSV
+            </Button>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Informations de l'offre</CardTitle>
-              <CardDescription>
-                Remplissez les détails ci-dessous pour créer une nouvelle offre d'emploi
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Briefcase className="h-4 w-4" />
-                          Nom du poste
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ex: Développeur Full Stack React/Node.js" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+          <Tabs defaultValue="form" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="form">Saisie manuelle</TabsTrigger>
+              <TabsTrigger value="import">Importer un CSV</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="form">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informations de l'offre</CardTitle>
+                  <CardDescription>
+                    Remplissez les détails ci-dessous pour créer une nouvelle offre d'emploi
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Briefcase className="h-4 w-4" />
+                              Nom du poste
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: Développeur Full Stack React/Node.js" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="contract"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          Type de contrat
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sélectionnez le type de contrat" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="cdi">CDI</SelectItem>
-                            <SelectItem value="cdd">CDD</SelectItem>
-                            <SelectItem value="interim">Intérim</SelectItem>
-                            <SelectItem value="stage">Stage</SelectItem>
-                            <SelectItem value="alternance">Alternance</SelectItem>
-                            <SelectItem value="freelance">Freelance</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="contract"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4" />
+                              Type de contrat
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Sélectionnez le type de contrat" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="cdi">CDI</SelectItem>
+                                <SelectItem value="cdd">CDD</SelectItem>
+                                <SelectItem value="interim">Intérim</SelectItem>
+                                <SelectItem value="stage">Stage</SelectItem>
+                                <SelectItem value="alternance">Alternance</SelectItem>
+                                <SelectItem value="freelance">Freelance</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="company"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Building className="h-4 w-4" />
-                          Entreprise
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nom de votre entreprise" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="company"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Building className="h-4 w-4" />
+                              Entreprise
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nom de votre entreprise" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="experience"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          Expérience requise
-                        </FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Niveau d'expérience requis" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="debutant">Débutant accepté</SelectItem>
-                            <SelectItem value="1-2">1 à 2 ans</SelectItem>
-                            <SelectItem value="3-5">3 à 5 ans</SelectItem>
-                            <SelectItem value="5-10">5 à 10 ans</SelectItem>
-                            <SelectItem value="10+">Plus de 10 ans</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="lieu"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4" />
+                              Lieu du poste
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: Paris, Télétravail, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Description du poste
-                        </FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Décrivez les responsabilités, les exigences et les avantages du poste..." 
-                            className="min-h-[200px]"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Soyez précis pour attirer les meilleurs candidats.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="experience"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4" />
+                              Expérience requise
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Niveau d'expérience requis" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="debutant">Débutant accepté</SelectItem>
+                                <SelectItem value="1-2">1 à 2 ans</SelectItem>
+                                <SelectItem value="3-5">3 à 5 ans</SelectItem>
+                                <SelectItem value="5-10">5 à 10 ans</SelectItem>
+                                <SelectItem value="10+">Plus de 10 ans</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <CardFooter className="flex justify-end pt-6 px-0">
-                    <Button type="submit" className="bg-career-blue hover:bg-career-darkblue">
-                      Publier l'offre
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                      <FormField
+                        control={form.control}
+                        name="groupe_metier"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              Groupe métier
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: Informatique, Finance, Marketing, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="missions"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <FileText className="h-4 w-4" />
+                              Missions principales
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Décrivez les missions principales du poste..." 
+                                className="min-h-[120px]"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="profil"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              Profil recherché
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Décrivez le profil idéal pour ce poste..." 
+                                className="min-h-[120px]"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <FileText className="h-4 w-4" />
+                              Description du poste
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Décrivez les responsabilités, les exigences et les avantages du poste..." 
+                                className="min-h-[200px]"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Soyez précis pour attirer les meilleurs candidats.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <CardFooter className="flex justify-end pt-6 px-0">
+                        <Button type="submit" className="bg-career-blue hover:bg-career-darkblue">
+                          Publier l'offre
+                        </Button>
+                      </CardFooter>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="import">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Importer des offres</CardTitle>
+                  <CardDescription>
+                    Importez vos offres d'emploi en masse à partir d'un fichier CSV
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center py-10">
+                  <File className="h-20 w-20 text-gray-300 mb-4" />
+                  <p className="text-center mb-6">
+                    Le fichier CSV doit contenir les colonnes suivantes : <br />
+                    <span className="font-mono text-xs">Nom_poste, Contrat, Description, Experience, Entreprise, missions, profil, groupe_metier, Lieu</span>
+                  </p>
+                  <Button 
+                    onClick={() => setShowImportModal(true)}
+                    className="bg-career-blue hover:bg-career-darkblue"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Importer un fichier CSV
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
+
+      <ImportJobsCSVModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={handleImportSuccess}
+      />
     </>
   );
 };
