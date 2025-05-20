@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import Header from "@/components/Header";
@@ -51,9 +50,10 @@ type JobFormValues = {
   Experience: string;
   missions?: string;
   profil?: string;
-  Description: string ;
+  Description: string;
   groupe_metier?: string;
   Lieu?: string;
+  stack_technique?: string;
 };
 
 const AddJobOffer = () => {
