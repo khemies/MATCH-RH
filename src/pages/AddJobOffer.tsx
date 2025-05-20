@@ -38,7 +38,8 @@ import {
   MapPin, 
   Users, 
   Upload, 
-  File
+  File,
+  Code
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImportJobsCSVModal from "@/components/jobs/ImportJobsCSVModal";
@@ -50,7 +51,8 @@ type JobFormValues = {
   Experience: string;
   missions?: string;
   profil?: string;
-  Description : string ;
+  Description: string;
+  stack_technique?: string;
   groupe_metier?: string;
   Lieu?: string;
 };
@@ -64,9 +66,10 @@ const AddJobOffer = () => {
       Contrat: "",
       Entreprise: "",
       Experience: "",
-      Description :"",
+      Description: "",
       missions: "",
       profil: "",
+      stack_technique: "",
       groupe_metier: "",
       Lieu: ""
     },
@@ -86,8 +89,10 @@ const AddJobOffer = () => {
       // Ajout de l'ID du recruteur aux données de l'offre
       const offerData = {
         ...data,
-        recruiterId: recruiterId
+        recruteur_id: recruiterId
       };
+
+      console.log("Données soumises:", offerData);
 
       const response = await fetch("http://localhost:5000/api/offres/add", {
         method: "POST",
@@ -185,8 +190,8 @@ const AddJobOffer = () => {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="cdi">CDI</SelectItem>
-                                <SelectItem value="cdd">CDD</SelectItem>
+                                <SelectItem value="CDI">CDI</SelectItem>
+                                <SelectItem value="CDD">CDD</SelectItem>
                                 <SelectItem value="interim">Intérim</SelectItem>
                                 <SelectItem value="stage">Stage</SelectItem>
                                 <SelectItem value="alternance">Alternance</SelectItem>
@@ -248,11 +253,11 @@ const AddJobOffer = () => {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="debutant">Débutant accepté</SelectItem>
-                                <SelectItem value=" moins de  12 mois"> moins de 12 mois </SelectItem>
-                                <SelectItem value="entre 12 et 24 mois ">entre 12 et 24 mois</SelectItem>
-                                <SelectItem value="entre 24 et 48 mois">"entre 24 et 48 mois"</SelectItem>
-                                <SelectItem value=" Plus 48 mois">Plus de 2 ans</SelectItem>
+                                <SelectItem value="Débutant accepté">Débutant accepté</SelectItem>
+                                <SelectItem value="moins de 12 mois">Moins de 12 mois</SelectItem>
+                                <SelectItem value="entre 12 et 24 mois">Entre 12 et 24 mois</SelectItem>
+                                <SelectItem value="entre 24 et 48 mois">Entre 24 et 48 mois</SelectItem>
+                                <SelectItem value="Plus 48 mois">Plus de 48 mois</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -279,6 +284,23 @@ const AddJobOffer = () => {
 
                       <FormField
                         control={form.control}
+                        name="stack_technique"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <Code className="h-4 w-4" />
+                              Stack technique
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: React, Node.js, MongoDB, etc." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
                         name="missions"
                         render={({ field }) => (
                           <FormItem>
@@ -297,7 +319,8 @@ const AddJobOffer = () => {
                           </FormItem>
                         )}
                       />
-                          <FormField
+
+                      <FormField
                         control={form.control}
                         name="Description"
                         render={({ field }) => (
@@ -338,8 +361,6 @@ const AddJobOffer = () => {
                           </FormItem>
                         )}
                       />
-
-                      
 
                       <CardFooter className="flex justify-end pt-6 px-0">
                         <Button type="submit" className="bg-career-blue hover:bg-career-darkblue">
