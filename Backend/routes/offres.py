@@ -1,3 +1,4 @@
+
 from flask import Blueprint, request, jsonify, current_app
 import csv
 import io
@@ -171,10 +172,26 @@ def get_matching_candidates(offre_id):
         # Vérifier que l'ID est valide
         if not ObjectId.is_valid(offre_id):
             return jsonify({"error": "ID d'offre invalide"}), 400
+        
+        # D'abord, récupérer l'offre pour obtenir son offre_id
+        offre = current_app.mongo.db.offres.find_one({"_id": ObjectId(offre_id)})
+        
+        if not offre:
+            return jsonify({"error": "Offre non trouvée"}), 404
+        
+        # Récupérer le offre_id de l'offre
+        offer_id_value = offre.get("offre_id")
+        
+        # Logging pour débogage
+        print(f"ID MongoDB de l'offre: {offre_id}")
+        print(f"offre_id de l'offre: {offer_id_value}")
+        
+        if not offer_id_value:
+            return jsonify({"error": "Cette offre n'a pas de identifiant offre_id"}), 400
             
         # Rechercher dans la collection CandidatsMeilleursOffres pour les candidats 
-        # correspondants à cette offre où candidat_id = offre_id
-        candidates = current_app.mongo.db.CandidatsMeilleursOffres.find({"candidat_id": offre_id})
+        # où candidat_id correspond au offre_id de l'offre sélectionnée
+        candidates = current_app.mongo.db.CandidatsMeilleursOffres.find({"candidat_id": str(offer_id_value)})
         
         # Convertir les documents MongoDB en liste pour la sérialisation JSON
         result = []
@@ -184,7 +201,7 @@ def get_matching_candidates(offre_id):
             result.append(candidate)
             
         # Logging pour débogage
-        print(f"Offre ID recherché: {offre_id}")
+        print(f"Recherche de candidats avec candidat_id = {offer_id_value}")
         print(f"Nombre de candidats trouvés: {len(result)}")
             
         return jsonify(result), 200

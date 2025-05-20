@@ -28,6 +28,7 @@ import {
 // Interface pour l'offre d'emploi
 interface Offer {
   _id?: string;
+  offre_id?: number | string;
   Nom_poste: string;
   Entreprise: string;
   Contrat: string;
@@ -38,7 +39,7 @@ interface Offer {
 // Interface pour le candidat
 interface Candidate {
   _id: string;
-  candidat_id?: string;  // ID de l'offre correspondante
+  candidat_id?: string | number;  // ID qui doit correspondre au offre_id
   nom?: string;
   prenom?: string;
   email?: string;
@@ -74,14 +75,15 @@ const CandidateMatching = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        console.log("ID de l'offre:", offerId);
+        console.log("ID MongoDB de l'offre:", offerId);
         
         // Récupération des détails de l'offre
         const offerResponse = await axios.get(`http://localhost:5000/api/offres/${offerId}`);
         setOffer(offerResponse.data);
         console.log("Détails de l'offre:", offerResponse.data);
         
-        // Récupération des candidats correspondants où candidat_id = offerId
+        // Récupération des candidats correspondants en utilisant l'ID MongoDB de l'offre
+        // Le backend s'occupera d'extraire le offre_id et de chercher les candidats avec candidat_id = offre_id
         const candidatesResponse = await axios.get(`http://localhost:5000/api/offres/candidates/matching/${offerId}`);
         console.log("Candidats reçus:", candidatesResponse.data);
         setCandidates(candidatesResponse.data || []);
@@ -160,6 +162,12 @@ const CandidateMatching = () => {
                   <CardDescription className="flex items-center space-x-2 flex-wrap text-base">
                     <Briefcase className="h-4 w-4" />
                     <span>{offer.Entreprise}</span>
+                    {offer.offre_id && (
+                      <>
+                        <span>•</span>
+                        <Badge variant="outline">ID de l'offre: {offer.offre_id}</Badge>
+                      </>
+                    )}
                     {offer.Contrat && (
                       <>
                         <span>•</span>
