@@ -51,6 +51,7 @@ const RecruiterContent = () => {
         const myOffersResponse = await axios.get(`http://localhost:5000/api/offres/recruiter/${id}`);
         
         if (myOffersResponse.data) {
+          console.log("Offres récupérées:", myOffersResponse.data);
           setMyOffers(myOffersResponse.data);
         }
         
@@ -58,6 +59,7 @@ const RecruiterContent = () => {
         const allOffersResponse = await axios.get("http://localhost:5000/api/offres/list?limit=100");
         
         if (allOffersResponse.data) {
+          console.log("Toutes les offres:", allOffersResponse.data);
           setAllOffers(allOffersResponse.data);
         }
       } catch (error) {
