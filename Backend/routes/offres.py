@@ -187,7 +187,7 @@ def get_matching_candidates(_id):
     
         
         # Chercher les candidats qui correspondent à cet 'offre_id' dans 'CandidatsMeilleursOffres'
-        candidates = current_app.mongo.db.CandidatsMeilleursOffres.find({"candidat_id":mon_offre_id})
+        candidates = current_app.mongo.db.OffresMeuilleurCandidat.find({"offre_id":mon_offre_id})
         result = []
         for candidate in candidates:
             candidat_id = str(candidate.get("candidat_id"))

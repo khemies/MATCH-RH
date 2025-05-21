@@ -38,29 +38,12 @@ interface Offer {
 
 // Interface pour le candidat
 interface Candidate {
-  _id: string;
-  candidat_id?: string | number;  // ID qui doit correspondre au offre_id
-  nom?: string;
-  prenom?: string;
-  email?: string;
-  telephone?: string;
-  experience?: string;
-  competences?: string[];
-  matching_score?: number;
-  disponibilite?: string;
-  mobilite?: string;
-  cv_url?: string;
-  // Ajout de propriétés supplémentaires potentiellement présentes dans CandidatsMeilleursOffres
-  nom_candidat?: string;
-  prenom_candidat?: string;
-  email_candidat?: string;
-  tel_candidat?: string;
-  competences_candidat?: string[];
-  experience_candidat?: string;
-  disponibilite_candidat?: string;
-  mobilite_candidat?: string;
-  cv_candidat?: string;
-  score_matching?: number;
+  
+  candidat_id: string;
+  Profil?: string;
+  Compétence?: string;
+  Expérience?: string;
+  score?: number;
 }
 
 const CandidateMatching = () => {
@@ -86,7 +69,7 @@ const CandidateMatching = () => {
         // Le backend s'occupera d'extraire le offre_id et de chercher les candidats avec candidat_id = offre_id
         const candidatesResponse = await axios.get(`http://localhost:5000/api/offres/candidates/matching/${offerId}`);
         console.log("Candidats reçus:", candidatesResponse.data);
-        setCandidates(candidatesResponse.data || []);
+        setCandidates(candidatesResponse.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
         toast.error("Impossible de récupérer les informations des candidats correspondants");
@@ -103,17 +86,12 @@ const CandidateMatching = () => {
   // Fonction pour normaliser les données du candidat (pour gérer différents formats)
   const normalizeCandidate = (candidate: Candidate) => {
     return {
-      _id: candidate._id,
-      nom: candidate.nom || candidate.nom_candidat || "",
-      prenom: candidate.prenom || candidate.prenom_candidat || "",
-      email: candidate.email || candidate.email_candidat || "",
-      telephone: candidate.telephone || candidate.tel_candidat || "",
-      experience: candidate.experience || candidate.experience_candidat || "",
-      competences: candidate.competences || candidate.competences_candidat || [],
-      matching_score: candidate.matching_score || candidate.score_matching || 0,
-      disponibilite: candidate.disponibilite || candidate.disponibilite_candidat || "",
-      mobilite: candidate.mobilite || candidate.mobilite_candidat || "",
-      cv_url: candidate.cv_url || candidate.cv_candidat || ""
+      
+      candidat_id: candidate.candidat_id,
+      Profil: candidate.Profil,
+      Compétence: candidate.Compétence,
+      Expérience: candidate.Expérience, 
+      score: candidate.score     
     };
   };
 
@@ -203,9 +181,9 @@ const CandidateMatching = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Candidat</TableHead>
-                        <TableHead>Contact</TableHead>
                         <TableHead>Score de correspondance</TableHead>
+                        <TableHead>profile</TableHead>
+                        <TableHead>Candidat</TableHead>
                         <TableHead>Expérience</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
@@ -214,28 +192,24 @@ const CandidateMatching = () => {
                       {candidates.map((candidate) => {
                         const normalizedCandidate = normalizeCandidate(candidate);
                         return (
-                          <TableRow key={candidate._id}>
-                            <TableCell className="font-medium">
-                              <div className="flex items-center">
-                                <User className="mr-2 h-4 w-4 text-gray-400" />
-                                {normalizedCandidate.prenom} {normalizedCandidate.nom}
-                              </div>
-                            </TableCell>
-                            <TableCell>{normalizedCandidate.email}</TableCell>
+                          <TableRow key={candidate.candidat_id}>
+                            
                             <TableCell>
-                              {normalizedCandidate.matching_score ? (
+                              {normalizedCandidate.score ? (
                                 <Badge className={`${
-                                  normalizedCandidate.matching_score >= 80 ? "bg-green-100 text-green-800" : 
-                                  normalizedCandidate.matching_score >= 50 ? "bg-amber-100 text-amber-800" : 
+                                  normalizedCandidate.score *100 >= 80 ? "bg-green-100 text-green-800" : 
+                                  normalizedCandidate.score *100  >= 50 ? "bg-amber-100 text-amber-800" : 
                                   "bg-gray-100 text-gray-800"
                                 }`}>
-                                  {normalizedCandidate.matching_score}%
+                                  {(normalizedCandidate.score * 100).toFixed(1)}%
                                 </Badge>
                               ) : (
                                 <span className="text-gray-500">Non évalué</span>
                               )}
                             </TableCell>
-                            <TableCell>{normalizedCandidate.experience || "Non spécifié"}</TableCell>
+                            <TableCell>{normalizedCandidate.Compétence }</TableCell>
+                            <TableCell>{normalizedCandidate.candidat_id }</TableCell>
+                            <TableCell>{normalizedCandidate.Expérience }</TableCell>
                             <TableCell className="text-right">
                               <Dialog>
                                 <DialogTrigger asChild>
@@ -251,7 +225,7 @@ const CandidateMatching = () => {
                                   <DialogHeader>
                                     <DialogTitle>Détails du candidat</DialogTitle>
                                     <DialogDescription>
-                                      Informations complètes sur le profil de {normalizedCandidate.prenom} {normalizedCandidate.nom}
+                                      Informations complètes sur le profil de {normalizedCandidate.candidat_id}
                                     </DialogDescription>
                                   </DialogHeader>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -259,72 +233,33 @@ const CandidateMatching = () => {
                                       <h3 className="text-lg font-medium mb-2">Informations personnelles</h3>
                                       <div className="space-y-2">
                                         <div>
-                                          <span className="text-gray-500">Nom complet:</span>
-                                          <p>{normalizedCandidate.prenom} {normalizedCandidate.nom}</p>
+                                          <span className="text-gray-500">Profile:</span>
+                                          <p>{normalizedCandidate.Profil}</p>
                                         </div>
-                                        <div>
-                                          <span className="text-gray-500">Email:</span>
-                                          <p>{normalizedCandidate.email}</p>
-                                        </div>
-                                        {normalizedCandidate.telephone && (
-                                          <div>
-                                            <span className="text-gray-500">Téléphone:</span>
-                                            <p>{normalizedCandidate.telephone}</p>
-                                          </div>
-                                        )}
-                                        {normalizedCandidate.mobilite && (
-                                          <div>
-                                            <span className="text-gray-500">Mobilité:</span>
-                                            <p>{normalizedCandidate.mobilite}</p>
-                                          </div>
-                                        )}
-                                        {normalizedCandidate.disponibilite && (
-                                          <div>
-                                            <span className="text-gray-500">Disponibilité:</span>
-                                            <p>{normalizedCandidate.disponibilite}</p>
-                                          </div>
-                                        )}
+                                        
+                                        
                                       </div>
                                     </div>
                                     <div>
                                       <h3 className="text-lg font-medium mb-2">Profil professionnel</h3>
                                       <div className="space-y-2">
-                                        {normalizedCandidate.experience && (
+                                        {normalizedCandidate.Profil && (
                                           <div>
                                             <span className="text-gray-500">Expérience:</span>
-                                            <p>{normalizedCandidate.experience}</p>
+                                            <p>{normalizedCandidate.Expérience}</p>
                                           </div>
                                         )}
-                                        {normalizedCandidate.competences && normalizedCandidate.competences.length > 0 && (
-                                          <div>
-                                            <span className="text-gray-500">Compétences:</span>
-                                            <div className="flex flex-wrap gap-1 mt-1">
-                                              {normalizedCandidate.competences.map((competence, index) => (
-                                                <Badge key={index} variant="secondary">{competence}</Badge>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        )}
-                                        {normalizedCandidate.matching_score && (
+                                  
+                                        {normalizedCandidate.score && (
                                           <div>
                                             <span className="text-gray-500">Score de correspondance:</span>
-                                            <p className="font-medium">{normalizedCandidate.matching_score}%</p>
+                                            <p className="font-medium">{normalizedCandidate.score}%</p>
                                           </div>
                                         )}
                                       </div>
                                     </div>
                                   </div>
-                                  {normalizedCandidate.cv_url && (
-                                    <div className="mt-6">
-                                      <h3 className="text-lg font-medium mb-2">Documents</h3>
-                                      <Button 
-                                        variant="outline" 
-                                        onClick={() => window.open(normalizedCandidate.cv_url, "_blank")}
-                                      >
-                                        Télécharger le CV
-                                      </Button>
-                                    </div>
-                                  )}
+                                  
                                 </DialogContent>
                               </Dialog>
                             </TableCell>
