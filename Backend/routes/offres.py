@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, jsonify, current_app
 import csv
 import io
@@ -166,46 +165,54 @@ def importer_offres_csv():
         return jsonify({"message": "Erreur lors de l'importation du fichier CSV", "error": str(e)}), 500
 
 # Route pour récupérer les candidats correspondants à une offre
-@offre_blueprint.route("/candidates/matching/<offre_id>", methods=["GET"])
-def get_matching_candidates(offre_id):
+@offre_blueprint.route("/candidates/matching/<_id>", methods=["GET"])
+def get_matching_candidates(_id):
     try:
-        # Vérifier que l'ID est valide
-        if not ObjectId.is_valid(offre_id):
+        # Vérifier que _id est un ObjectId valide
+        if not ObjectId.is_valid(_id):
             return jsonify({"error": "ID d'offre invalide"}), 400
-        
-        # D'abord, récupérer l'offre pour obtenir son offre_id
-        offre = current_app.mongo.db.offres.find_one({"_id": ObjectId(offre_id)})
+
+        # Convertir la chaîne _id en ObjectId (MongoDB)
+        mongo_id = ObjectId(_id)
+        print(mongo_id)
+        # Récupérer l'offre depuis la collection 'offres'
+        offre = current_app.mongo.db.offres.find_one({"_id": mongo_id})
         
         if not offre:
             return jsonify({"error": "Offre non trouvée"}), 404
         
-        # Récupérer le offre_id de l'offre
-        offer_id_value = offre.get("offre_id")
+        # Extraire le champ 'offre_id' de l'offre récupérée
+        mon_offre_id = offre.get("offre_id")
+        print(mon_offre_id)
+    
         
-        # Logging pour débogage
-        print(f"ID MongoDB de l'offre: {offre_id}")
-        print(f"offre_id de l'offre: {offer_id_value}")
-        
-        if not offer_id_value:
-            return jsonify({"error": "Cette offre n'a pas de identifiant offre_id"}), 400
-            
-        # Rechercher dans la collection CandidatsMeilleursOffres pour les candidats 
-        # où candidat_id correspond au offre_id de l'offre sélectionnée
-        candidates = current_app.mongo.db.CandidatsMeilleursOffres.find({"candidat_id": str(offer_id_value)})
-        
-        # Convertir les documents MongoDB en liste pour la sérialisation JSON
+        # Chercher les candidats qui correspondent à cet 'offre_id' dans 'CandidatsMeilleursOffres'
+        candidates = current_app.mongo.db.CandidatsMeilleursOffres.find({"candidat_id":mon_offre_id})
         result = []
         for candidate in candidates:
-            # Convertir ObjectId en string pour la sérialisation JSON
-            candidate["_id"] = str(candidate["_id"])
+            candidat_id = str(candidate.get("candidat_id"))
+            print(f"✅ ID du candidat trouvé : {candidat_id}")  # Affichage dans le terminal
+            
+            # Ajouter le document candidat complet dans le résultat
+            # Si tu veux seulement l'ID, faire result.append(candidat_id)
             result.append(candidate)
-            
-        # Logging pour débogage
-        print(f"Recherche de candidats avec candidat_id = {offer_id_value}")
-        print(f"Nombre de candidats trouvés: {len(result)}")
-            
-        return jsonify(result), 200
         
+        print(f"Nombre de candidats trouvés: {len(result)}")
+        
+        # Pour que jsonify puisse retourner le résultat, il faut transformer l'objet Mongo (ObjectId) en string
+        # car ObjectId n'est pas JSON serializable
+        # Donc on convertit chaque document candidat en dict avec stringification des ObjectId
+        def transform_candidate(doc):
+            doc["_id"] = str(doc["_id"])
+            # Si candidat_id est aussi un ObjectId, on peut aussi le convertir, sinon laisse tel quel
+            if isinstance(doc.get("candidat_id"), ObjectId):
+                doc["candidat_id"] = str(doc["candidat_id"])
+            return doc
+        
+        result_json = [transform_candidate(c) for c in result]
+
+        return jsonify(result_json), 200
+
     except Exception as e:
         print(f"Erreur lors de la récupération des candidats: {str(e)}")
         return jsonify({"error": f"Erreur lors de la récupération des candidats: {str(e)}"}), 500
