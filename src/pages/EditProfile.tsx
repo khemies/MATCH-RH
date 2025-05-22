@@ -14,7 +14,7 @@ type ProfileFormValues = {
   location: string;
   availability: string;
   profile: string;
-  strengths: string[];
+  strengths: string;
   skills: string;
   experience: string;
   contract_type: string;
@@ -30,7 +30,7 @@ const EditProfile = () => {
       location: "",
       availability: "immediate",
       profile: "",
-      strengths: [],
+      strengths: "",
       skills: "",
       experience: "",
       contract_type: "",

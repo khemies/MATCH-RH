@@ -1,18 +1,31 @@
-
 import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Star, Check, User, Briefcase, FileText } from "lucide-react";
+import {
+  MapPin,
+  Calendar,
+  Star,
+  Check,
+  User,
+  Briefcase,
+  FileText
+} from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 type ProfileFormValues = {
   location: string;
   availability: string;
   profile: string;
-  strengths: string[];
+  strengths: string; // modifié de string[] vers string
   skills: string;
   experience: string;
   contract_type: string;
@@ -22,17 +35,6 @@ type ProfileFormValues = {
 interface ProfileFormFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
 }
-
-const strengthsList = [
-  "Autonomie",
-  "Capacité d'adaptation",
-  "Communication",
-  "Créativité",
-  "Esprit d'équipe",
-  "Leadership",
-  "Organisation",
-  "Résolution de problèmes"
-];
 
 const ProfileFormFields = ({ form }: ProfileFormFieldsProps) => {
   return (
@@ -67,38 +69,23 @@ const ProfileFormFields = ({ form }: ProfileFormFieldsProps) => {
               Disponibilité
             </FormLabel>
             <div className="flex flex-wrap gap-4">
-              <Button 
-                type="button"
-                variant={field.value === "immediate" ? "default" : "outline"}
-                onClick={() => field.onChange("immediate")}
-                className={field.value === "immediate" ? "bg-career-blue" : ""}
-              >
-                Immédiate
-              </Button>
-              <Button 
-                type="button"
-                variant={field.value === "1month" ? "default" : "outline"}
-                onClick={() => field.onChange("1month")}
-                className={field.value === "1month" ? "bg-career-blue" : ""}
-              >
-                1 mois
-              </Button>
-              <Button 
-                type="button"
-                variant={field.value === "3months" ? "default" : "outline"}
-                onClick={() => field.onChange("3months")}
-                className={field.value === "3months" ? "bg-career-blue" : ""}
-              >
-                3 mois
-              </Button>
-              <Button 
-                type="button"
-                variant={field.value === "flexible" ? "default" : "outline"}
-                onClick={() => field.onChange("flexible")}
-                className={field.value === "flexible" ? "bg-career-blue" : ""}
-              >
-                Flexible
-              </Button>
+              {["immediate", "1month", "3months", "flexible"].map((val) => (
+                <Button
+                  key={val}
+                  type="button"
+                  variant={field.value === val ? "default" : "outline"}
+                  onClick={() => field.onChange(val)}
+                  className={field.value === val ? "bg-career-blue" : ""}
+                >
+                  {val === "immediate"
+                    ? "Immédiate"
+                    : val === "1month"
+                    ? "1 mois"
+                    : val === "3months"
+                    ? "3 mois"
+                    : "Flexible"}
+                </Button>
+              ))}
             </div>
             <FormMessage />
           </FormItem>
@@ -115,10 +102,10 @@ const ProfileFormFields = ({ form }: ProfileFormFieldsProps) => {
               Profil
             </FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Décrivez votre parcours professionnel, vos objectifs et ce que vous recherchez..." 
+              <Textarea
+                placeholder="Décrivez votre parcours professionnel, vos objectifs et ce que vous recherchez..."
                 className="min-h-[150px]"
-                {...field} 
+                {...field}
               />
             </FormControl>
             <FormDescription>
@@ -132,45 +119,22 @@ const ProfileFormFields = ({ form }: ProfileFormFieldsProps) => {
       <FormField
         control={form.control}
         name="strengths"
-        render={() => (
+        render={({ field }) => (
           <FormItem>
             <FormLabel className="flex items-center gap-2">
               <Star className="h-4 w-4" />
               Points forts
             </FormLabel>
-            <div className="grid grid-cols-2 gap-2">
-              {strengthsList.map((strength) => (
-                <FormField
-                  key={strength}
-                  control={form.control}
-                  name="strengths"
-                  render={({ field }) => {
-                    return (
-                      <FormItem
-                        key={strength}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(strength)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, strength])
-                                : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== strength
-                                    )
-                                  )
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">{strength}</FormLabel>
-                      </FormItem>
-                    )
-                  }}
-                />
-              ))}
-            </div>
+            <FormControl>
+              <Textarea
+                placeholder="Décrivez vos points forts (ex: autonomie, communication...)"
+                className="min-h-[100px]"
+                {...field}
+              />
+            </FormControl>
+            <FormDescription>
+              Vous pouvez écrire vos qualités personnelles, soft skills ou atouts distinctifs.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -186,10 +150,10 @@ const ProfileFormFields = ({ form }: ProfileFormFieldsProps) => {
               Compétences
             </FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Entrez vos compétences séparées par des virgules (ex: JavaScript, React, Python...)" 
+              <Textarea
+                placeholder="Entrez vos compétences séparées par des virgules (ex: JavaScript, React, Python...)"
                 className="min-h-[100px]"
-                {...field} 
+                {...field}
               />
             </FormControl>
             <FormDescription>

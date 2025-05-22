@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify, current_app
 import csv
 import io
 from bson.objectid import ObjectId
+import subprocess
+
 
 offre_blueprint = Blueprint("offres", __name__)
 
@@ -46,25 +48,35 @@ def normalize_offer_data(data, source="form"):
 
 @offre_blueprint.route("/add", methods=["POST"])
 def ajouter_offre():
-    # Récupération des données envoyées dans la requête
     data = request.get_json()
-    
-    # Normalisation des données du formulaire
     offre = normalize_offer_data(data, "form")
 
-    # Vérification des champs requis
     if not offre["Nom_poste"] or not offre["Entreprise"] or not offre["Description"]:
         return jsonify({"error": "Champs requis manquants"}), 400
 
     try:
-        # Insertion dans la base de données MongoDB
-        inserted = current_app.mongo.db.offres.insert_one(offre)
+        collection = current_app.mongo.db.offres
+        last_offre = collection.find_one({"offre_id": {"$exists": True}}, sort=[("offre_id", -1)])
+        max_offre_id = int(last_offre["offre_id"]) if last_offre else 0
+        next_offre_id = str(max_offre_id + 1)
+        offre["offre_id"] = next_offre_id
+
+        inserted = collection.insert_one(offre)
+
+        try:
+            subprocess.run(["python", "script_new_offre.py"], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Erreur lors de l'exécution du script : {str(e)}")
+
         return jsonify({
             "message": "Offre ajoutée avec succès", 
-            "id": str(inserted.inserted_id)
+            "id": str(inserted.inserted_id),
+            "offre_id": next_offre_id
         }), 201
+
     except Exception as e:
         return jsonify({"error": f"Erreur lors de l'ajout: {str(e)}"}), 500
+
 
 @offre_blueprint.route("/list", methods=["GET"])
 def lister_offres():

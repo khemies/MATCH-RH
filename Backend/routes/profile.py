@@ -17,7 +17,7 @@ def normalize_profile_data(data, source="form"):
             "profile": data.get("profile", ""),
             "location": data.get("location", ""),
             "availability": data.get("availability", "immediate"),
-            "strengths": data.get("strengths", []),
+            "strengths": data.get("strengths", "").strip(),
             "skills": data.get("skills", []) if isinstance(data.get("skills"), list) else [s.strip() for s in data.get("skills", "").split(",") if s.strip()],
             "experience": "",  # Champ présent dans le CSV mais pas dans le formulaire
             "contract_type": "",  # Champ présent dans le CSV mais pas dans le formulaire
@@ -31,7 +31,7 @@ def normalize_profile_data(data, source="form"):
             "profile": data.get("Profil", ""),
             "location": data.get("Lieu_de_recherche", ""),
             "availability": data.get("Disponibilité", "immediate"),
-            "strengths": data.get("Points_forts", "").split(",") if isinstance(data.get("Points_forts"), str) else data.get("Points_forts", []),
+            "strengths": data.get("Points_forts", "").strip(),
             "skills": data.get("Compétence", "").split(",") if isinstance(data.get("Compétence"), str) else data.get("Compétence", []),
             "experience": data.get("Expérience", ""),
             "contract_type": data.get("Contrat", ""),
@@ -67,21 +67,34 @@ def upload_cv():
             profile_data["cv_filename"] = filename
 
     # Vérifier si un profil existe déjà pour cet utilisateur
-    existing_profile = None
+    candidat_id = None
     if profile_data["user_id"]:
         existing_profile = current_app.mongo.db.profiles.find_one({"user_id": profile_data["user_id"]})
-    
-    if existing_profile:
-        # Mise à jour du profil existant
-        current_app.mongo.db.profiles.update_one(
-            {"user_id": profile_data["user_id"]},
-            {"$set": profile_data}
-        )
-        return jsonify({"message": "Profil mis à jour avec succès", "id": str(existing_profile["_id"])}), 200
-    else:
-        # Création d'un nouveau profil
-        result = current_app.mongo.db.profiles.insert_one(profile_data)
-        return jsonify({"message": "Profil enregistré avec succès", "id": str(result.inserted_id)}), 201
+
+        if existing_profile:
+            # Mise à jour du profil existant
+            current_app.mongo.db.profiles.update_one(
+                {"user_id": profile_data["user_id"]},
+                {"$set": profile_data}
+            )
+            candidat_id = str(existing_profile["_id"])
+        else:
+            # Création d'un nouveau profil
+            result = current_app.mongo.db.profiles.insert_one(profile_data)
+            candidat_id = str(result.inserted_id)
+
+        # 🔁 Stocker temporairement ce profil pour le matching dans une collection dédiée
+        current_app.mongo.db.candidat_temp.insert_one({
+            "candidat_id": candidat_id,
+            "user_id": profile_data["user_id"],
+            "profil": profile_data["profile"],
+            "skills": profile_data["skills"],
+            "source": "formulaire"
+        })
+
+        return jsonify({"message": "Profil enregistré ou mis à jour avec succès", "id": candidat_id}), 200
+
+    return jsonify({"message": "User ID manquant dans le profil"}), 400
 
 @profile_blueprint.route("/me", methods=["GET"])
 @jwt_required()
@@ -180,11 +193,9 @@ def import_csv_profiles():
             # Normaliser les données du CSV
             profile_data = normalize_profile_data(row, "csv")
             
-            # Ajouter l'ID utilisateur si nécessaire (par exemple, générer un ID unique)
             if not profile_data.get("user_id"):
                 profile_data["user_id"] = str(ObjectId())
             
-            # Insérer le profil dans la base de données
             current_app.mongo.db.profiles.insert_one(profile_data)
             imported_count += 1
         
