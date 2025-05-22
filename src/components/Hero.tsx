@@ -12,7 +12,7 @@ const Hero = () => {
               Connectez <span className="hero-text-gradient">Talents</span> et <span className="hero-text-gradient">Opportunités</span>
             </h1>
             <p className="text-lg text-gray-600 mb-8">
-              CareerLinkMatch aide les recruteurs à trouver les candidats parfaits et les candidats à découvrir les postes qui correspondent à leurs compétences.
+              MatchRH aide les recruteurs à trouver les candidats parfaits et les candidats à découvrir les postes qui correspondent à leurs compétences.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="btn-primary-gradient text-white">

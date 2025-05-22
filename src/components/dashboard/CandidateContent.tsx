@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import OffreMatching from "@/pages/OffreMatching";
+
 
 interface Offer {
   _id: string;
@@ -137,14 +139,11 @@ const CandidateContent = () => {
         <h2 className="text-2xl font-semibold mb-4">Explorez les opportunités du moment</h2>
         {renderOffersList(allOffers, isLoadingOffers, "Aucune offre disponible pour le moment")}
       </TabsContent>
-
-      <TabsContent value="matching">
+      <TabsContent value="matching" className="space-y-4">
         <h2 className="text-2xl font-semibold mb-4">Matching intelligent</h2>
-        <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
-          <h3 className="text-xl font-medium mb-2">Fonctionnalité à venir</h3>
-          <p className="text-gray-500">Notre système de matching intelligent est en cours de développement.</p>
-        </div>
+        <OffreMatching candidatId="0" />
       </TabsContent>
+
 
       <TabsContent value="applications">
         <h2 className="text-2xl font-semibold mb-4">Mes candidatures</h2>

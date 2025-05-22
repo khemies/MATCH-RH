@@ -206,3 +206,20 @@ def import_csv_profiles():
         
     except Exception as e:
         return jsonify({"message": "Erreur lors de l'importation du fichier CSV", "error": str(e)}), 500
+    
+@profile_blueprint.route("/profile/matching/<candidat_id>", methods=["GET"])
+def get_matching_offres(candidat_id):
+    try:
+        # Recherche des offres liées à ce candidat_id dans la collection CandidatsMeilleursOffres
+        matchs = current_app.mongo.db.CandidatsMeilleursOffres.find({"candidat_id": "0"})
+
+        result = []
+        for match in matchs:
+            match["offre_id"] = str(match["offre_id"])
+            result.append(match)
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        print(f"❌ Erreur lors de la récupération des offres matchées : {str(e)}")
+        return jsonify({"error": f"Erreur : {str(e)}"}), 500
